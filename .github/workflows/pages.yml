@@ -29,12 +29,23 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet publish src/ChocolateToxicity.Web --configuration Release --output publish/web
       # Pages serves the site from /<repository>/, and sends 404.html for unknown paths, which lets deep links
-      # such as /toxins/chocolate load the app. .nojekyll stops Pages hiding the _framework folder.
+      # such as /toxins/chocolate load the app. Changing index.html changes its hash, so the service worker's
+      # asset list is updated to match; otherwise the offline cache fails its integrity check and never installs.
+      # .nojekyll stops Pages hiding the _framework folder.
       - name: Prepare for GitHub Pages
         working-directory: publish/web/wwwroot
         run: |
           sed -i 's|<base href="/" />|<base href="/${{ github.event.repository.name }}/" />|' index.html
           rm -f index.html.br index.html.gz
+          hash="sha256-$(openssl dgst -sha256 -binary index.html | openssl base64 -A)"
+          python3 - "$hash" <<'PY'
+          import re, sys
+          path = 'service-worker-assets.js'
+          text = open(path).read()
+          text, count = re.subn(r'("hash": ")[^"]*(",\s*"url": "index\.html")', lambda m: m.group(1) + sys.argv[1] + m.group(2), text)
+          assert count == 1, 'index.html is missing from the service worker asset list'
+          open(path, 'w').write(text)
+          PY
           cp index.html 404.html
           touch .nojekyll
       - uses: actions/upload-pages-artifact@v3
