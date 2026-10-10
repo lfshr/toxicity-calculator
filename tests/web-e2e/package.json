@@ -1,0 +1,11 @@
+{
+  "name": "vet-calculator-web-e2e",
+  "private": true,
+  "description": "Browser tests for the Blazor web app. Run `npm test` after `dotnet publish src/ChocolateToxicity.Web -c Release -o publish/web` from the repository root.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

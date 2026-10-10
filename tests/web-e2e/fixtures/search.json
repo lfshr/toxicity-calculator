@@ -1,0 +1,30 @@
+{
+  "hits": [
+    {
+      "code": "3046920022606",
+      "product_name": { "en": "Excellence 70% Cacao" },
+      "brands": ["Lindt"],
+      "quantity": "100 g",
+      "product_quantity": 100,
+      "product_quantity_unit": "g",
+      "nutriments": { "cocoa_100g": 70 },
+      "image_front_small_url": "https://images.openfoodfacts.org/images/products/304/692/002/2606/front_en.200.jpg",
+      "categories_tags": ["en:chocolates", "en:dark-chocolates"]
+    },
+    {
+      "code": "7622210449283",
+      "product_name": { "en": "Dairy Milk" },
+      "brands": ["Cadbury"],
+      "quantity": "110 g",
+      "product_quantity": 110,
+      "product_quantity_unit": "g",
+      "categories_tags": ["en:chocolates", "en:milk-chocolates"]
+    },
+    {
+      "code": "5000168001142",
+      "product_name": { "en": "Digestive biscuits" },
+      "brands": ["McVitie's"],
+      "categories_tags": ["en:biscuits"]
+    }
+  ]
+}

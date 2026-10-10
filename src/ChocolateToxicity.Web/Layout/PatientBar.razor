@@ -1,0 +1,31 @@
+@inject PatientState Patient
+@implements IDisposable
+
+<section class="patient-bar" aria-label="Patient">
+    <div class="segmented" role="radiogroup" aria-label="Species">
+        <button type="button" role="radio" aria-checked="@(Patient.Species == Species.Dog ? "true" : "false")"
+                class="@(Patient.Species == Species.Dog ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Dog)">Dog</button>
+        <button type="button" role="radio" aria-checked="@(Patient.Species == Species.Cat ? "true" : "false")"
+                class="@(Patient.Species == Species.Cat ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Cat)">Cat</button>
+    </div>
+    <label class="patient-weight">
+        <span>Weight</span>
+        <NumberInput Id="patient-weight" Value="@Patient.WeightText" ValueChanged="Patient.SetWeight" Unit="kg" Placeholder="kg" />
+    </label>
+    @if (Patient.WeightKg is { } kg)
+    {
+        <span class="patient-lb">@Numbers.Format(UnitConversion.KgToLb(kg)) lb</span>
+    }
+    @if (Patient.WeightText.Length > 0 || Patient.Species != Species.Dog)
+    {
+        <button type="button" class="link" @onclick="Patient.Clear">New patient</button>
+    }
+</section>
+
+@code {
+    protected override void OnInitialized() => Patient.Changed += Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Patient.Changed -= Refresh;
+}

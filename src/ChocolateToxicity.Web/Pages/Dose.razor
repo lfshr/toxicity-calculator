@@ -1,0 +1,86 @@
+@page "/dose"
+@inherits PatientPage
+
+<PageTitle>Drug dose - Vet Calculator</PageTitle>
+
+<PageHeader Title="Drug dose" Intro="Turn a mg/kg dose into mg, then mL of an injection or liquid, or a number of tablets." />
+
+<div class="calc-form">
+    <PatientWeightField />
+
+    <Field Label="Dose" For="dose" Error="@DoseError">
+        <NumberInput Id="dose" Value="@doseText" ValueChanged="v => doseText = v" Unit="mg/kg" Placeholder="e.g. 0.2" Invalid="@(DoseError is not null)" />
+    </Field>
+
+    <Field Label="Concentration (for injections and liquids)" For="concentration" Error="@ConcentrationError"
+           Hint="From the vial or bottle. A percentage solution: 1% = 10 mg/mL.">
+        <NumberInput Id="concentration" Value="@concentrationText" ValueChanged="v => concentrationText = v" Unit="mg/mL" Placeholder="e.g. 10" Invalid="@(ConcentrationError is not null)" />
+    </Field>
+
+    <Field Label="Tablet strength (for tablets)" For="tablet" Error="@TabletError">
+        <NumberInput Id="tablet" Value="@tabletText" ValueChanged="v => tabletText = v" Unit="mg" Placeholder="e.g. 50" Invalid="@(TabletError is not null)" />
+    </Field>
+
+    <Field Label="Tablets can be split into" For="split">
+        <select id="split" @bind="split">
+            <option value="1">Whole tablets only</option>
+            <option value="2">Halves</option>
+            <option value="4">Quarters</option>
+        </select>
+    </Field>
+</div>
+
+@if (Result is { } result)
+{
+    <section class="result-card" id="dose-result">
+        <h2>Give</h2>
+        <p class="big">@F(result.TotalMg) mg</p>
+        @if (result.VolumeMl is { } ml)
+        {
+            <p class="big">@F(ml) mL</p>
+            <p class="hint">@F(result.TotalMg) mg / @concentrationText mg/mL</p>
+        }
+        @if (result.Tablets is { } tablets)
+        {
+            var rounded = DrugDose.RoundToSplit(tablets, split);
+            <p class="big">@F(rounded) @(rounded == 1 ? "tablet" : "tablets")</p>
+            <p class="hint">
+                Exactly @F(tablets) tablets. @F(rounded) gives @F(rounded * Parse(tabletText)!.Value) mg = @F(rounded * Parse(tabletText)!.Value / WeightKg!.Value) mg/kg.
+                @if (rounded == 0)
+                {
+                    <span> The dose is less than the smallest portion: consider a lower strength or a liquid.</span>
+                }
+            </p>
+        }
+        <CopyButton Text="NotesText" />
+    </section>
+}
+else
+{
+    <AwaitingInput>Enter the weight and the dose.</AwaitingInput>
+}
+
+@code {
+    private string doseText = "";
+    private string concentrationText = "";
+    private string tabletText = "";
+    private int split = 2;
+
+    private string? DoseError => doseText.Length > 0 && Parse(doseText) is not >= 0 ? "Enter the dose in mg/kg." : null;
+    private string? ConcentrationError => concentrationText.Length > 0 && Parse(concentrationText) is not > 0 ? "Enter a concentration above 0." : null;
+    private string? TabletError => tabletText.Length > 0 && Parse(tabletText) is not > 0 ? "Enter a strength above 0." : null;
+
+    private DrugDoseResult? Result =>
+        WeightKg is { } kg && Parse(doseText) is >= 0 and var dose && ConcentrationError is null && TabletError is null
+            ? DrugDose.Calculate(kg, dose, Parse(concentrationText), Parse(tabletText))
+            : null;
+
+    private string NotesText()
+    {
+        var result = Result!;
+        var parts = new List<string> { $"{doseText} mg/kg for {F(WeightKg!.Value)} kg = {F(result.TotalMg)} mg" };
+        if (result.VolumeMl is { } ml) parts.Add($"{F(ml)} mL of {concentrationText} mg/mL");
+        if (result.Tablets is { } t) parts.Add($"{F(DrugDose.RoundToSplit(t, split))} x {tabletText} mg tablets");
+        return string.Join("; ", parts) + ".";
+    }
+}

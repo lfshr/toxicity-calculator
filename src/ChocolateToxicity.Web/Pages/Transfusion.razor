@@ -1,0 +1,86 @@
+@page "/transfusion"
+@inherits PatientPage
+
+<PageTitle>Blood transfusion - Vet Calculator</PageTitle>
+
+<PageHeader Title="Blood transfusion" Intro="The volume of whole blood or packed red cells needed to raise the PCV to a target." />
+
+<div class="calc-form">
+    <PatientWeightField />
+
+    <Field Label="Patient's PCV" For="recipient">
+        <NumberInput Id="recipient" Value="@recipientText" ValueChanged="v => recipientText = v" Unit="%" Placeholder="e.g. 12" />
+    </Field>
+    <Field Label="Target PCV" For="target" Hint="Often 25-30% in dogs and 20-25% in cats.">
+        <NumberInput Id="target" Value="@targetText" ValueChanged="v => targetText = v" Unit="%" Placeholder="e.g. 25" />
+    </Field>
+    <Field Label="Donor unit PCV" For="donor" Hint="Whole blood is usually about 40%; packed red cells 60-80%.">
+        <NumberInput Id="donor" Value="@donorText" ValueChanged="v => donorText = v" Unit="%" />
+    </Field>
+    <Field Label="Blood volume" For="bv" Hint="80-90 mL/kg in dogs and 40-60 mL/kg in cats. Filled in with the upper value for the species.">
+        <NumberInput Id="bv" Value="@BloodVolumeText" ValueChanged="v => bloodVolumeText = v" Unit="mL/kg" />
+    </Field>
+</div>
+
+@if (Volume is { } volume)
+{
+    <section class="result-card" id="transfusion-result">
+        <h2>Volume</h2>
+        <p class="big">@F(volume) mL</p>
+        <p class="hint">(@targetText - @recipientText) / @donorText x @BloodVolumeText mL/kg x @F(WeightKg!.Value) kg (Merck Veterinary Manual).</p>
+        <p class="hint">
+            Give slowly for the first 15-30 minutes while watching for reactions, and finish within 4 hours. Slower in patients with
+            heart or kidney disease. Blood type (and cross-match a cat, or a dog transfused before).
+        </p>
+    </section>
+}
+else if (error is not null)
+{
+    <p class="notice warning">@error</p>
+}
+else
+{
+    <AwaitingInput>Enter the weight and the PCVs.</AwaitingInput>
+}
+
+@code {
+    private string recipientText = "";
+    private string targetText = "";
+    private string donorText = "40";
+    private string? bloodVolumeText;
+    private string? error;
+
+    // Follows the species until it's changed by hand.
+    private string BloodVolumeText => bloodVolumeText ?? F(ChocolateToxicity.Clinical.Transfusion.DefaultBloodVolumeMlPerKg(Species));
+
+    private double? Volume
+    {
+        get
+        {
+            error = null;
+            if (WeightKg is not { } kg || Parse(recipientText) is not { } recipient || Parse(targetText) is not { } target ||
+                Parse(donorText) is not { } donor || Parse(BloodVolumeText) is not { } bv)
+            {
+                return null;
+            }
+
+            if (recipient < 0 || donor <= 0 || bv <= 0)
+            {
+                error = "PCVs and blood volume must be positive numbers.";
+                return null;
+            }
+
+            try
+            {
+                return ChocolateToxicity.Clinical.Transfusion.VolumeMl(kg, recipient, target, donor, bv);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                error = target <= recipient
+                    ? "The target PCV must be above the patient's."
+                    : "The target PCV must be below the donor unit's.";
+                return null;
+            }
+        }
+    }
+}

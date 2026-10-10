@@ -1,0 +1,23 @@
+@inject IJSRuntime JS
+
+<button type="button" class="secondary" @onclick="CopyAsync">@(copied ? "Copied" : Label)</button>
+
+@code {
+    [Parameter, EditorRequired] public Func<string> Text { get; set; } = () => "";
+    [Parameter] public string Label { get; set; } = "Copy for clinical notes";
+
+    private bool copied;
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Text());
+            copied = true;
+        }
+        catch (JSException)
+        {
+            // Clipboard access can be refused (for example over plain HTTP); the text is still on screen.
+        }
+    }
+}

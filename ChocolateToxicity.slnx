@@ -1,11 +1,14 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/ChocolateToxicity.App/ChocolateToxicity.App.csproj" />
+    <Project Path="src/ChocolateToxicity.Clinical/ChocolateToxicity.Clinical.csproj" />
     <Project Path="src/ChocolateToxicity.Core/ChocolateToxicity.Core.csproj" />
     <Project Path="src/ChocolateToxicity.ProductSearch/ChocolateToxicity.ProductSearch.csproj" />
     <Project Path="src/ChocolateToxicity.ViewModels/ChocolateToxicity.ViewModels.csproj" />
+    <Project Path="src/ChocolateToxicity.Web/ChocolateToxicity.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ChocolateToxicity.Clinical.Tests/ChocolateToxicity.Clinical.Tests.csproj" />
     <Project Path="tests/ChocolateToxicity.Core.Tests/ChocolateToxicity.Core.Tests.csproj" />
     <Project Path="tests/ChocolateToxicity.ProductSearch.Tests/ChocolateToxicity.ProductSearch.Tests.csproj" />
     <Project Path="tests/ChocolateToxicity.ViewModels.Tests/ChocolateToxicity.ViewModels.Tests.csproj" />

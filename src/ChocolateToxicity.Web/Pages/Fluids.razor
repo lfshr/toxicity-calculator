@@ -1,0 +1,74 @@
+@page "/fluids"
+@inherits PatientPage
+
+<PageTitle>Fluid therapy - Vet Calculator</PageTitle>
+
+<PageHeader Title="Fluid therapy" Intro="An hourly rate from maintenance, the dehydration deficit and ongoing losses, with drip rates for gravity sets." />
+
+<div class="calc-form">
+    <PatientWeightField />
+
+    <Field Label="Dehydration" For="dehydration" Hint="Under 5%: not detectable. 5-6%: subtle loss of skin elasticity. 6-8%: delayed skin tent, dry mucous membranes. 10-12%: sunken eyes, shock signs."
+           Error="@(Parse(dehydrationText) is < 0 or > 15 ? "Enter 0 to 15%." : null)">
+        <NumberInput Id="dehydration" Value="@dehydrationText" ValueChanged="v => dehydrationText = v" Unit="%" Placeholder="e.g. 6" />
+    </Field>
+
+    <Field Label="Replace the deficit over" For="hours" Hint="Usually 12-24 hours; longer for patients with heart disease.">
+        <NumberInput Id="hours" Value="@hoursText" ValueChanged="v => hoursText = v" Unit="hours" />
+    </Field>
+
+    <Field Label="Ongoing losses (vomiting, diarrhoea, polyuria)" For="losses" Hint="Estimate per day. Leave blank for none.">
+        <NumberInput Id="losses" Value="@lossesText" ValueChanged="v => lossesText = v" Unit="mL/day" Placeholder="0" />
+    </Field>
+</div>
+
+@if (Plan is { } plan)
+{
+    <section class="result-card" id="fluid-result">
+        <h2>Rate</h2>
+        <p class="big">@F(plan.TotalMlPerHour) mL/hr</p>
+        @if (plan.DeficitMl > 0)
+        {
+            <p>for the first @hoursText hours, then @F(plan.AfterDeficitMlPerHour) mL/hr.</p>
+        }
+        <table class="breakdown">
+            <tr><td>Maintenance</td><td>@F(plan.MaintenanceMlPerHour) mL/hr</td><td class="hint">@F(plan.MaintenanceMlPerDay) mL/day</td></tr>
+            <tr><td>Deficit</td><td>@F(plan.DeficitMlPerHour) mL/hr</td><td class="hint">@F(plan.DeficitMl) mL in total</td></tr>
+            <tr><td>Ongoing losses</td><td>@F(plan.OngoingLossesMlPerHour) mL/hr</td><td></td></tr>
+        </table>
+        <h3>Drip rate at @F(plan.TotalMlPerHour) mL/hr</h3>
+        <table class="breakdown">
+            @foreach (var set in new[] { 10, 15, 20, 60 })
+            {
+                var perMinute = FluidTherapy.DropsPerMinute(plan.TotalMlPerHour, set);
+                <tr>
+                    <td>@set drops/mL set</td>
+                    <td>@F(perMinute) drops/min</td>
+                    <td class="hint">@(perMinute > 0 ? $"1 drop every {F(60 / perMinute)} s" : "")</td>
+                </tr>
+            }
+        </table>
+        <p class="hint">
+            Maintenance: @(Species == Species.Cat ? "80" : "132") x weight<sup>0.75</sup> mL/day (AAHA 2013 fluid therapy guidelines, @SpeciesName).
+            Deficit: % dehydration x weight (kg) x 1000 mL. Reassess the patient and adjust the rate regularly.
+        </p>
+    </section>
+}
+else
+{
+    <AwaitingInput>Enter the weight to see the maintenance rate.</AwaitingInput>
+}
+
+@code {
+    private string dehydrationText = "";
+    private string hoursText = "24";
+    private string lossesText = "";
+
+    private FluidPlan? Plan =>
+        WeightKg is { } kg &&
+        (dehydrationText.Length == 0 ? 0 : Parse(dehydrationText)) is >= 0 and <= 15 and var dehydration &&
+        Parse(hoursText) is > 0 and var hours &&
+        (lossesText.Length == 0 ? 0 : Parse(lossesText)) is >= 0 and var losses
+            ? FluidTherapy.Plan(Species, kg, dehydration, hours, losses)
+            : null;
+}

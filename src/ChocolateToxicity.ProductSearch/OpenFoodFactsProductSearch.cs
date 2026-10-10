@@ -82,7 +82,12 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
     private async Task<JsonDocument> GetJsonAsync(string url, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.UserAgent.ParseAdd(UserAgent);
+        // Browsers send their own User-Agent and won't let a page replace it; adding one would only trigger
+        // a CORS preflight request, so the web app leaves it out.
+        if (!OperatingSystem.IsBrowser())
+        {
+            request.Headers.UserAgent.ParseAdd(UserAgent);
+        }
 
         try
         {

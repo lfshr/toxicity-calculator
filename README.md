@@ -5,17 +5,48 @@ should be considered. It covers chocolate, grapes and raisins, xylitol, ibuprofe
 The chocolate calculator is modelled on the
 [Vets Now chocolate toxicity calculator](https://www.vets-now.com/dog-chocolate-toxicity-calculator/).
 
+It comes as an Android app and as a web app. The web app adds clinical calculators for dogs and cats: emetics and
+activated charcoal, CPR drugs and defibrillation, drug doses, constant rate infusions, fluid therapy, blood
+transfusion, body surface area and energy requirements, and unit conversions.
+
 ## Layout
 
 - `src/ChocolateToxicity.Core`: the calculation library. The other toxins are in `Toxins/`.
 - `src/ChocolateToxicity.ProductSearch`: product search against Open Food Facts.
 - `src/ChocolateToxicity.ViewModels`: the screens' logic (input parsing, validation, result wording), kept free of UI types so it can be tested on any machine.
 - `src/ChocolateToxicity.App`: the .NET MAUI Android app.
+- `src/ChocolateToxicity.Clinical`: the web app's clinical calculations (emetics, CPR drugs, doses, CRI, fluids, transfusion, BSA, energy, units).
+- `src/ChocolateToxicity.Web`: the Blazor WebAssembly web app. It runs entirely in the browser and reuses the libraries above.
 - `tests/ChocolateToxicity.Core.Tests`: xUnit tests, including the Vets Now worked examples.
 - `tests/ChocolateToxicity.ProductSearch.Tests`: xUnit tests for reading Open Food Facts results.
 - `tests/ChocolateToxicity.ViewModels.Tests`: xUnit tests for the screens' logic.
+- `tests/ChocolateToxicity.Clinical.Tests`: xUnit tests for the clinical calculations.
+- `tests/web-e2e`: Playwright tests that drive the web app in Chromium at desktop and phone sizes.
 
 Run the tests with `dotnet test tests/<project>` for each test project (.NET 10 SDK).
+
+### Running the web app
+
+```
+dotnet run --project src/ChocolateToxicity.Web
+```
+
+To run the browser tests, publish the app and run Playwright (Node 20 or later):
+
+```
+dotnet publish src/ChocolateToxicity.Web -c Release -o publish/web
+cd tests/web-e2e
+npm ci
+npx playwright install chromium
+npx playwright test
+```
+
+The tests answer Open Food Facts requests from fixtures in `tests/web-e2e/fixtures`, so they run offline.
+
+The "Deploy web app" GitHub Actions workflow publishes the app to GitHub Pages on every push to `main`, once Pages
+is turned on (Settings > Pages > Source: GitHub Actions). The app is a static site, so any static host works:
+serve `publish/web/wwwroot`, sending `index.html` for unknown paths. It can be installed to a phone's home screen
+and works offline after the first visit.
 
 ### Building the Android app
 
@@ -185,6 +216,25 @@ the toxic dose if that is lower.
 Cholecalciferol (vitamin D3, usually 0.075%): signs from 0.1 mg/kg (emesis flagged), soft tissue mineralisation
 above 0.5 mg/kg.
 
+## Clinical calculators (web app)
+
+The patient's species and weight are entered once in the header and used by every calculator.
+
+| Calculator | Formula | Source |
+|---|---|---|
+| Apomorphine | 0.1 mg/kg SC of 1 mg/mL; 0.03-0.04 mg/kg IV | Emedog UK SPC; Merck |
+| Ropinirole (Clevor) | Drops by weight band, 1.8-100 kg | Clevor UK SPC |
+| Activated charcoal | 1-2 g/kg PO once | Merck, chocolate toxicosis |
+| CPR drugs | Per-kg doses at an editable concentration; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
+| Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
+| CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
+| Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013 |
+| Transfusion | (target - patient PCV) / donor PCV x blood volume (90 dog, 60 cat mL/kg) x kg | Merck |
+| BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
+| Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
+
+The toxin calculators use dog thresholds; the web app warns when the patient is a cat.
+
 ## Sources
 
 - Merck Veterinary Manual, [Chocolate Toxicosis in Animals](https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals): methylxanthine content per type and the 20, 40-50 and 60 mg/kg thresholds.
@@ -197,6 +247,10 @@ above 0.5 mg/kg.
 - Merola, [Anticoagulant rodenticides: Deadly for pests, dangerous for pets](https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), Veterinary Medicine 2002: dog LD50s, bait concentrations and the 0.02 mg/kg decontamination threshold.
 - Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. Difenacoum dog LD50 from Bull, Proc. Vertebr. Pest Conf. 7, 72 (1976).
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
+- [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf): CPR drug doses, concentrations and defibrillation energies.
+- VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC.
+- AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/): maintenance formulas.
+- Merck Veterinary Manual, [Blood Transfusions in Dogs and Cats](https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats) and [weight to BSA conversion](https://www.merckvetmanual.com/multimedia/table/weight-to-body-surface-area-conversion-for-dogs).
 - Vets Now, [My dog has eaten chocolate](https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate): the same thresholds, theobromine figures for dark chocolate and cocoa powder, and the worked examples used in the tests.
 
 ## Disclaimer

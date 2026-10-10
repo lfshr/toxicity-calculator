@@ -1,0 +1,86 @@
+@page "/cri"
+@inherits PatientPage
+
+<PageTitle>Constant rate infusion - Vet Calculator</PageTitle>
+
+<PageHeader Title="Constant rate infusion" Intro="Work out a syringe driver rate for the undiluted drug, or how much drug to add to a bag or syringe of fluid." />
+
+<div class="calc-form">
+    <PatientWeightField />
+
+    <Field Label="Dose rate" For="dose" Error="@(doseText.Length > 0 && Dose is null ? "Enter the dose rate." : null)">
+        <div class="input-row">
+            <NumberInput Id="dose" Value="@doseText" ValueChanged="v => doseText = v" Placeholder="e.g. 50" />
+            <select aria-label="Dose unit" @bind="unit">
+                <option value="@CriDoseUnit.MicrogramsPerKgPerMinute">µg/kg/min</option>
+                <option value="@CriDoseUnit.MicrogramsPerKgPerHour">µg/kg/hr</option>
+                <option value="@CriDoseUnit.MilligramsPerKgPerHour">mg/kg/hr</option>
+                <option value="@CriDoseUnit.MilligramsPerKgPerMinute">mg/kg/min</option>
+            </select>
+        </div>
+    </Field>
+
+    <Field Label="Drug concentration" For="concentration" Hint="Lidocaine 2% is 20 mg/mL; fentanyl is usually 0.05 mg/mL (50 µg/mL).">
+        <NumberInput Id="concentration" Value="@concentrationText" ValueChanged="v => concentrationText = v" Unit="mg/mL" Placeholder="e.g. 20" />
+    </Field>
+
+    <fieldset class="field">
+        <legend>Giving it</legend>
+        <div class="segmented wide" role="radiogroup">
+            <button type="button" role="radio" aria-checked="@(!diluted ? "true" : "false")" class="@(!diluted ? "selected" : "")" @onclick="() => diluted = false">Undiluted (syringe driver)</button>
+            <button type="button" role="radio" aria-checked="@(diluted ? "true" : "false")" class="@(diluted ? "selected" : "")" @onclick="() => diluted = true">Added to fluids</button>
+        </div>
+        @if (diluted)
+        {
+            <Field Label="Bag or syringe volume" For="volume">
+                <NumberInput Id="volume" Value="@volumeText" ValueChanged="v => volumeText = v" Unit="mL" Placeholder="e.g. 500" />
+            </Field>
+            <Field Label="Fluid rate" For="rate" Hint="The rate the bag or syringe will run at.">
+                <NumberInput Id="rate" Value="@rateText" ValueChanged="v => rateText = v" Unit="mL/hr" Placeholder="e.g. 50" />
+            </Field>
+        }
+    </fieldset>
+</div>
+
+@if (WeightKg is { } kg && Dose is { } dose && Parse(concentrationText) is > 0 and var concentration)
+{
+    var mgPerHour = ConstantRateInfusion.MgPerHour(kg, dose, unit);
+    <section class="result-card" id="cri-result">
+        <h2>Result</h2>
+        <p>Delivers @F(mgPerHour) mg/hr (@F(mgPerHour * 1000 / 60) µg/min).</p>
+        @if (!diluted)
+        {
+            <p class="big">Run at @F(ConstantRateInfusion.UndilutedMlPerHour(kg, dose, unit, concentration)) mL/hr</p>
+        }
+        else if (Parse(volumeText) is > 0 and var volume && Parse(rateText) is > 0 and var rate)
+        {
+            var (mg, ml) = ConstantRateInfusion.AddToBag(kg, dose, unit, concentration, volume, rate);
+            <p class="big">Add @F(ml) mL (@F(mg) mg)</p>
+            <p>to @F(volume) mL and run at @F(rate) mL/hr. It lasts @F(volume / rate) hours.</p>
+            <p class="hint">For accuracy, remove the same volume of fluid from the bag before adding the drug.</p>
+            @if (ml > volume * 0.1)
+            {
+                <p class="notice warning">The drug is more than 10% of the bag. Consider a smaller bag, a faster rate, or a syringe driver.</p>
+            }
+        }
+        else
+        {
+            <p>Enter the bag volume and fluid rate.</p>
+        }
+    </section>
+}
+else
+{
+    <AwaitingInput>Enter the weight, dose rate and concentration.</AwaitingInput>
+}
+
+@code {
+    private string doseText = "";
+    private string concentrationText = "";
+    private string volumeText = "";
+    private string rateText = "";
+    private CriDoseUnit unit = CriDoseUnit.MicrogramsPerKgPerMinute;
+    private bool diluted;
+
+    private double? Dose => Parse(doseText) is >= 0 and var dose ? dose : null;
+}
