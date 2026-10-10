@@ -2,8 +2,7 @@
 
 A calculator for veterinary surgeons that estimates the dose of a toxin a dog has eaten, and whether inducing emesis
 should be considered. It covers chocolate, grapes and raisins, xylitol, ibuprofen, paracetamol and rat and mouse bait.
-The chocolate calculator is modelled on the
-[Vets Now chocolate toxicity calculator](https://www.vets-now.com/dog-chocolate-toxicity-calculator/).
+
 
 It comes as an Android app and as a web app. The web app adds clinical calculators for dogs and cats: emetics and
 activated charcoal, CPR drugs and defibrillation, drug doses, constant rate infusions, fluid therapy, blood
