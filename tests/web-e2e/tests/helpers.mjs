@@ -9,12 +9,18 @@ const icon = readFileSync(fileURLToPath(new URL('../../../src/ChocolateToxicity.
  * (or on network access at all).
  */
 export async function stubOpenFoodFacts(page) {
-  await page.route('https://search.openfoodfacts.org/**', route =>
+  const requests = [];
+  page.on('request', request => requests.push(request.url()));
+  // Search-a-licious sends no CORS headers, so a browser blocks it. Playwright doesn't apply CORS to fulfilled
+  // responses, so fail the request the way the browser would.
+  await page.route('https://search.openfoodfacts.org/**', route => route.abort('failed'));
+  await page.route('https://world.openfoodfacts.org/cgi/search.pl**', route =>
     route.fulfill({ contentType: 'application/json', body: fixture('search.json'), headers: { 'Access-Control-Allow-Origin': '*' } }));
   await page.route('https://world.openfoodfacts.org/api/v2/product/**', route =>
     route.fulfill({ contentType: 'application/json', body: fixture('product-lindt.json'), headers: { 'Access-Control-Allow-Origin': '*' } }));
   await page.route('https://images.openfoodfacts.org/**', route =>
     route.fulfill({ contentType: 'image/png', body: icon }));
+  return requests;
 }
 
 /** Opens a page and waits for Blazor to render it. */

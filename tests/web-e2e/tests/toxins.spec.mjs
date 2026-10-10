@@ -43,7 +43,7 @@ test('chocolate: missing fields show errors', async ({ page }) => {
 });
 
 test('chocolate: product search fills in cocoa and pack weight', async ({ page }) => {
-  await stubOpenFoodFacts(page);
+  const requests = await stubOpenFoodFacts(page);
   await open(page, 'toxins/chocolate');
   await page.locator('#weight').fill('8');
   await page.getByRole('button', { name: 'Search products' }).click();
@@ -52,6 +52,9 @@ test('chocolate: product search fills in cocoa and pack weight', async ({ page }
   await page.getByRole('button', { name: 'Search', exact: true }).click();
   // The biscuits have no cocoa data, so only the two chocolates are listed.
   await expect(page.locator('.result')).toHaveCount(2);
+  // Only Open Food Facts' main site allows requests from a browser, so search goes straight there.
+  expect(requests.filter(url => url.includes('openfoodfacts.org/cgi/search.pl'))).toHaveLength(1);
+  expect(requests.filter(url => url.includes('search.openfoodfacts.org'))).toHaveLength(0);
   await page.locator('.result', { hasText: 'Excellence 70% Cacao' }).click();
 
   await expect(page.locator('#cocoa')).toHaveValue('70');

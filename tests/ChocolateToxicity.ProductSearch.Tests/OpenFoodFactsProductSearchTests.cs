@@ -205,6 +205,20 @@ public class OpenFoodFactsProductSearchTests
     }
 
     [Fact]
+    public async Task Can_skip_search_a_licious_for_browsers()
+    {
+        var handler = new StubHandler(HttpStatusCode.OK, SearchResponse);
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler), useSearchService: false);
+
+        var products = await search.SearchAsync("lindt");
+
+        Assert.Equal(5, products.Count);
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal("world.openfoodfacts.org", request.RequestUri!.Host);
+        Assert.Contains("search_terms=lindt", request.RequestUri.Query);
+    }
+
+    [Fact]
     public async Task Gets_a_products_full_record()
     {
         const string body = """
