@@ -16,8 +16,15 @@ namespace ChocolateToxicity.ProductSearch;
 /// may lack nutriment data, so the chosen product's full record is fetched from the product API (15 requests a
 /// minute). Requests must carry a User-Agent naming the app: https://openfoodfacts.github.io/openfoodfacts-server/api/
 /// </remarks>
-public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : IProductSearch
+/// <param name="httpClient">The client to send requests with.</param>
+/// <param name="useSearchService">
+/// False to go straight to the older search. Search-a-licious sends no CORS headers, so a browser blocks it, while
+/// world.openfoodfacts.org allows requests from any site. Defaults to false when running in a browser.
+/// </param>
+public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bool? useSearchService = null) : IProductSearch
 {
+    private readonly bool _useSearchService = useSearchService ?? !OperatingSystem.IsBrowser();
+
     public const string UserAgent = "ChocolateToxicityCalculator/1.0 (https://github.com/lfshr/toxicity-calculator)";
 
     private const string SearchUrl = "https://search.openfoodfacts.org/search";
@@ -45,18 +52,23 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
         }
 
         var terms = Uri.EscapeDataString(query.Trim());
-        try
+        if (_useSearchService)
         {
-            using var document = await GetJsonAsync($"{SearchUrl}?q={terms}&langs=en,main&page_size={PageSize}&fields={Fields}", cancellationToken);
-            return ParseSearchResponse(document.RootElement);
+            try
+            {
+                using var document = await GetJsonAsync($"{SearchUrl}?q={terms}&langs=en,main&page_size={PageSize}&fields={Fields}", cancellationToken);
+                return ParseSearchResponse(document.RootElement);
+            }
+            catch (ProductSearchException)
+            {
+                // Fall through to the older search.
+            }
         }
-        catch (ProductSearchException)
-        {
-            using var document = await GetJsonAsync(
-                $"{LegacySearchUrl}?search_terms={terms}&search_simple=1&action=process&json=1&page_size={PageSize}&fields={Fields}",
-                cancellationToken);
-            return ParseSearchResponse(document.RootElement);
-        }
+
+        using var legacy = await GetJsonAsync(
+            $"{LegacySearchUrl}?search_terms={terms}&search_simple=1&action=process&json=1&page_size={PageSize}&fields={Fields}",
+            cancellationToken);
+        return ParseSearchResponse(legacy.RootElement);
     }
 
     public async Task<ChocolateProduct?> GetProductAsync(string barcode, CancellationToken cancellationToken = default)
