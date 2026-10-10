@@ -7,12 +7,14 @@ has eaten from chocolate, and whether inducing emesis should be considered. It i
 ## Layout
 
 - `src/ChocolateToxicity.Core`: the calculation library.
+- `src/ChocolateToxicity.ProductSearch`: product search against Open Food Facts.
 - `src/ChocolateToxicity.ViewModels`: the screens' logic (input parsing, validation, result wording), kept free of UI types so it can be tested on any machine.
 - `src/ChocolateToxicity.App`: the .NET MAUI Android app.
 - `tests/ChocolateToxicity.Core.Tests`: xUnit tests, including the Vets Now worked examples.
+- `tests/ChocolateToxicity.ProductSearch.Tests`: xUnit tests for reading Open Food Facts results.
 - `tests/ChocolateToxicity.ViewModels.Tests`: xUnit tests for the screens' logic.
 
-Run the tests with `dotnet test tests/ChocolateToxicity.Core.Tests` and `dotnet test tests/ChocolateToxicity.ViewModels.Tests` (.NET 10 SDK).
+Run the tests with `dotnet test tests/<project>` for each test project (.NET 10 SDK).
 
 ### Building the Android app
 
@@ -32,6 +34,22 @@ The calculator screen takes the dog's weight in kg, what was eaten (a chocolate 
 label) and the amount eaten in grams. The result screen leads with the verdict (consider inducing emesis, or not
 indicated by dose), coloured by severity, then the dose in mg/kg, the expected signs, the working and a clinical
 disclaimer. Numbers can be typed with either a full stop or the device's decimal separator.
+
+### Product search
+
+"Search products" looks the product up on [Open Food Facts](https://world.openfoodfacts.org), a free, open
+product database, and fills in the chocolate from the chosen result:
+
+1. The cocoa percentage recorded from the label (Open Food Facts' "cocoa" nutriment), if there is one.
+2. Otherwise a percentage in the product name, such as "Excellence 70% Cacao", but only when the name or category
+   says it's dark chocolate or cocoa, so "30% less sugar" isn't read as cocoa.
+3. Otherwise the type its category implies (milk, white or cocoa powder).
+4. Otherwise it asks you to pick the chocolate type.
+
+Cocoa powder and white chocolate always go by type: a percentage would understate defatted powder, and white
+chocolate's cocoa is cocoa butter, with almost no theobromine. When the product's pack weight is known, the app
+offers it as the amount eaten. Open Food Facts allows 10 searches a minute per device, so search runs when you
+press search rather than as you type.
 
 ## How it calculates
 

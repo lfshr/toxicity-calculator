@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChocolateToxicity.Core\ChocolateToxicity.Core.csproj" />
+    <ProjectReference Include="..\ChocolateToxicity.ProductSearch\ChocolateToxicity.ProductSearch.csproj" />
   </ItemGroup>
 
 </Project>

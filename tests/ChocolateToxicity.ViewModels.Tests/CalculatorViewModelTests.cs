@@ -1,28 +1,18 @@
 using System.Globalization;
 using ChocolateToxicity.Core;
+using ChocolateToxicity.ProductSearch;
 
 namespace ChocolateToxicity.ViewModels.Tests;
 
 public class CalculatorViewModelTests
 {
-    private sealed class FakeNavigation : INavigationService
-    {
-        public ResultViewModel? Shown { get; private set; }
-
-        public Task ShowResultAsync(ResultViewModel result)
-        {
-            Shown = result;
-            return Task.CompletedTask;
-        }
-    }
-
     private readonly FakeNavigation _navigation = new();
     private readonly CalculatorViewModel _viewModel;
 
     public CalculatorViewModelTests()
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
-        _viewModel = new CalculatorViewModel(_navigation);
+        _viewModel = new CalculatorViewModel(_navigation, new FakeProductSearch());
     }
 
     [Fact]
@@ -149,13 +139,67 @@ public class CalculatorViewModelTests
     }
 
     [Fact]
-    public void Product_cocoa_percent_switches_to_cocoa_mode()
+    public void Product_with_cocoa_percent_switches_to_cocoa_mode()
     {
-        _viewModel.UseProductCocoaPercent(85);
+        _viewModel.ApplyProduct(Product(cocoa: 85, source: CocoaPercentSource.LabelData));
 
         Assert.True(_viewModel.UseCocoaPercent);
         Assert.Equal("85", _viewModel.CocoaPercent);
+        Assert.Contains("85% cocoa, taken from the label data", _viewModel.ProductNote);
     }
+
+    [Fact]
+    public void Product_without_cocoa_percent_uses_its_suggested_type()
+    {
+        _viewModel.UseCocoaPercent = true;
+
+        _viewModel.ApplyProduct(Product(type: ChocolateType.Milk));
+
+        Assert.False(_viewModel.UseCocoaPercent);
+        Assert.Equal(ChocolateType.Milk, _viewModel.SelectedChocolateType?.Type);
+    }
+
+    [Fact]
+    public void Product_with_nothing_known_asks_for_the_type()
+    {
+        _viewModel.SelectedChocolateType = ChocolateTypeOption.For(ChocolateType.Milk);
+
+        _viewModel.ApplyProduct(Product());
+
+        Assert.False(_viewModel.UseCocoaPercent);
+        Assert.Null(_viewModel.SelectedChocolateType);
+        Assert.Contains("Choose the type of chocolate", _viewModel.ProductNote);
+    }
+
+    [Fact]
+    public void Whole_pack_fills_the_amount_eaten()
+    {
+        _viewModel.ApplyProduct(Product(cocoa: 70, packGrams: 100));
+
+        Assert.Equal("Use whole pack (100 g)", _viewModel.WholePackText);
+        _viewModel.UseWholePackCommand.Execute(null);
+        Assert.Equal("100", _viewModel.AmountEatenGrams);
+    }
+
+    [Fact]
+    public async Task Search_opens_the_search_screen_and_a_choice_fills_the_form()
+    {
+        await _viewModel.SearchProductsCommand.ExecuteAsync(null);
+        var search = Assert.IsType<ProductSearchViewModel>(_navigation.Search);
+
+        await search.ChooseCommand.ExecuteAsync(new ProductResult(Product(cocoa: 70)));
+
+        Assert.Equal("70", _viewModel.CocoaPercent);
+        Assert.Equal(1, _navigation.BackCount);
+    }
+
+    private static ChocolateProduct Product(
+        double? cocoa = null,
+        CocoaPercentSource? source = null,
+        ChocolateType? type = null,
+        double? packGrams = null) =>
+        new("123", "Test bar", "Brand", packGrams is null ? null : $"{packGrams} g", packGrams, cocoa,
+            cocoa is null ? null : source ?? CocoaPercentSource.LabelData, type);
 
     [Fact]
     public async Task Clear_resets_the_form()
@@ -171,5 +215,7 @@ public class CalculatorViewModelTests
         Assert.False(_viewModel.UseCocoaPercent);
         Assert.Equal("", _viewModel.CocoaPercent);
         Assert.Null(_viewModel.AmountEatenError);
+        Assert.Null(_viewModel.ProductNote);
+        Assert.Null(_viewModel.WholePackGrams);
     }
 }

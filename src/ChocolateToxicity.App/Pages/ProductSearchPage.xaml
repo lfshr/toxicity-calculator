@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.ProductSearchPage"
+             x:DataType="vm:ProductSearchViewModel"
+             Title="Search products">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" RowSpacing="12">
+
+        <SearchBar Grid.Row="0"
+                   x:Name="SearchBox"
+                   Text="{Binding Query}"
+                   Placeholder="Brand and product, e.g. Lindt 70%"
+                   SearchCommand="{Binding SearchCommand}"
+                   AutomationId="ProductSearchBar" />
+
+        <Label Grid.Row="1"
+               Text="Product data from Open Food Facts, a free community database. Cocoa content isn't always recorded."
+               Style="{StaticResource HintLabel}" />
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <ActivityIndicator IsRunning="{Binding IsSearching}" IsVisible="{Binding IsSearching}" />
+            <Label Text="{Binding Message}"
+                   IsVisible="{Binding Message, Converter={StaticResource HasText}}"
+                   FontSize="15" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Results}"
+                        SelectionMode="None"
+                        AutomationId="ProductResults">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ProductResult">
+                    <VerticalStackLayout Padding="0,10" Spacing="2">
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChooseCommand, Source={RelativeSource AncestorType={x:Type vm:ProductSearchViewModel}}, x:DataType=vm:ProductSearchViewModel}"
+                                                  CommandParameter="{Binding .}" />
+                        </VerticalStackLayout.GestureRecognizers>
+                        <Label Text="{Binding Title}" Style="{StaticResource FieldLabel}" />
+                        <Label Text="{Binding Detail}" Style="{StaticResource HintLabel}" FontSize="14" />
+                        <BoxView HeightRequest="1"
+                                 Margin="0,8,0,0"
+                                 Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

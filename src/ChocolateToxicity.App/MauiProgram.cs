@@ -1,5 +1,6 @@
 using ChocolateToxicity.App.Pages;
 using ChocolateToxicity.App.Services;
+using ChocolateToxicity.ProductSearch;
 using ChocolateToxicity.ViewModels;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,8 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
+		builder.Services.AddSingleton<IProductSearch>(_ =>
+			new OpenFoodFactsProductSearch(new HttpClient { Timeout = TimeSpan.FromSeconds(20) }));
 		builder.Services.AddTransient<CalculatorViewModel>();
 		builder.Services.AddTransient<CalculatorPage>();
 

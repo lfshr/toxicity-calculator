@@ -1,5 +1,6 @@
 using System.Globalization;
 using ChocolateToxicity.Core;
+using ChocolateToxicity.ProductSearch;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -7,9 +8,9 @@ namespace ChocolateToxicity.ViewModels;
 
 /// <summary>
 /// The calculator form: dog weight, what was eaten and how much.
-/// The chocolate is described either by type or by the cocoa percentage on the label.
+/// The chocolate is described either by type or by the cocoa percentage on the label, which product search can fill in.
 /// </summary>
-public partial class CalculatorViewModel(INavigationService navigation) : ObservableObject
+public partial class CalculatorViewModel(INavigationService navigation, IProductSearch productSearch) : ObservableObject
 {
     public IReadOnlyList<ChocolateTypeOption> ChocolateTypes => ChocolateTypeOption.All;
 
@@ -38,19 +39,68 @@ public partial class CalculatorViewModel(INavigationService navigation) : Observ
     [ObservableProperty]
     public partial string? ChocolateError { get; set; }
 
+    /// <summary>Says which product filled in the chocolate, and how.</summary>
+    [ObservableProperty]
+    public partial string? ProductNote { get; set; }
+
+    /// <summary>Pack weight of the chosen product, offered as the amount eaten.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WholePackText))]
+    public partial double? WholePackGrams { get; set; }
+
+    public string? WholePackText => WholePackGrams is { } grams
+        ? $"Use whole pack ({grams.ToString("0.#", CultureInfo.CurrentCulture)} g)"
+        : null;
+
     /// <summary>
-    /// Fills in the chocolate from a known cocoa percentage, for example from a product found by search.
+    /// Fills in the chocolate from a product found by search: its cocoa percentage when known,
+    /// otherwise the type its category implies, otherwise it asks for the type.
     /// </summary>
-    public void UseProductCocoaPercent(double cocoaPercent)
+    public void ApplyProduct(ChocolateProduct product)
     {
-        UseCocoaPercent = true;
-        CocoaPercent = cocoaPercent.ToString("0.#", CultureInfo.CurrentCulture);
         ChocolateError = null;
+        WholePackGrams = product.PackWeightGrams;
+
+        if (product.CocoaPercent is { } cocoa)
+        {
+            UseCocoaPercent = true;
+            CocoaPercent = cocoa.ToString("0.#", CultureInfo.CurrentCulture);
+            var from = product.CocoaPercentSource == CocoaPercentSource.ProductName ? "the product name" : "the label data";
+            ProductNote = $"{product.DisplayName}: {CocoaPercent}% cocoa, taken from {from}. Check it against the wrapper if you have it.";
+        }
+        else if (product.SuggestedType is { } type)
+        {
+            UseCocoaPercent = false;
+            SelectedChocolateType = ChocolateTypeOption.For(type);
+            ProductNote = $"{product.DisplayName}: listed as {SelectedChocolateType.Description}.";
+        }
+        else
+        {
+            UseCocoaPercent = false;
+            SelectedChocolateType = null;
+            ProductNote = $"{product.DisplayName}: no cocoa percentage on record. Choose the type of chocolate.";
+        }
+    }
+
+    [RelayCommand]
+    private Task SearchProductsAsync() =>
+        navigation.ShowProductSearchAsync(new ProductSearchViewModel(productSearch, navigation, ApplyProduct));
+
+    [RelayCommand]
+    private void UseWholePack()
+    {
+        if (WholePackGrams is { } grams)
+        {
+            AmountEatenGrams = grams.ToString("0.#", CultureInfo.CurrentCulture);
+            AmountEatenError = null;
+        }
     }
 
     [RelayCommand]
     private void Clear()
     {
+        ProductNote = null;
+        WholePackGrams = null;
         DogWeightKg = "";
         AmountEatenGrams = "";
         UseCocoaPercent = false;

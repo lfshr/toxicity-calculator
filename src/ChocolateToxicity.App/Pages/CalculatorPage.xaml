@@ -30,7 +30,17 @@
             <VerticalStackLayout Spacing="6">
                 <Label Text="What was eaten" Style="{StaticResource FieldLabel}" />
 
-                <!-- Product search goes here: a found product's cocoa % is passed to CalculatorViewModel.UseProductCocoaPercent. -->
+                <Button Text="Search products"
+                        Command="{Binding SearchProductsCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderWidth="1"
+                        AutomationId="SearchProductsButton" />
+
+                <Label Text="{Binding ProductNote}"
+                       Style="{StaticResource HintLabel}"
+                       IsVisible="{Binding ProductNote, Converter={StaticResource HasText}}" />
 
                 <HorizontalStackLayout Spacing="12" RadioButtonGroup.GroupName="ChocolateInput">
                     <RadioButton Content="Chocolate type"
@@ -71,6 +81,16 @@
                        AutomationId="AmountEatenEntry" />
                 <Label Text="If unsure, use the most that could have been eaten."
                        Style="{StaticResource HintLabel}" />
+                <Button Text="{Binding WholePackText}"
+                        Command="{Binding UseWholePackCommand}"
+                        IsVisible="{Binding WholePackText, Converter={StaticResource HasText}}"
+                        HorizontalOptions="Start"
+                        Padding="14,6"
+                        FontSize="14"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderWidth="1" />
                 <Label Text="{Binding AmountEatenError}"
                        Style="{StaticResource ErrorLabel}"
                        IsVisible="{Binding AmountEatenError, Converter={StaticResource HasText}}" />

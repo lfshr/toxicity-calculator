@@ -4,4 +4,8 @@ namespace ChocolateToxicity.ViewModels;
 public interface INavigationService
 {
     Task ShowResultAsync(ResultViewModel result);
+
+    Task ShowProductSearchAsync(ProductSearchViewModel search);
+
+    Task GoBackAsync();
 }
