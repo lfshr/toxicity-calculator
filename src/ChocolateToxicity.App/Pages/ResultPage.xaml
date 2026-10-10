@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
              x:Class="ChocolateToxicity.App.Pages.ResultPage"
              x:DataType="vm:ResultViewModel"
+             HideSoftInputOnTapped="True"
              Title="Result">
 
     <ScrollView>

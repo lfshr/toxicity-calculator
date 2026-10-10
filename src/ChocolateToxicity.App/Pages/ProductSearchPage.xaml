@@ -4,16 +4,25 @@
              xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
              x:Class="ChocolateToxicity.App.Pages.ProductSearchPage"
              x:DataType="vm:ProductSearchViewModel"
+             HideSoftInputOnTapped="True"
              Title="Search products">
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" RowSpacing="12">
 
-        <SearchBar Grid.Row="0"
-                   x:Name="SearchBox"
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Grid.Column="0"
                    Text="{Binding Query}"
                    Placeholder="Brand and product, e.g. Lindt 70%"
-                   SearchCommand="{Binding SearchCommand}"
-                   AutomationId="ProductSearchBar" />
+                   Keyboard="Text"
+                   ReturnType="Search"
+                   ReturnCommand="{Binding SearchCommand}"
+                   ClearButtonVisibility="WhileEditing"
+                   AutomationId="ProductSearchEntry" />
+            <Button Grid.Column="1"
+                    Text="Search"
+                    Command="{Binding SearchCommand}"
+                    AutomationId="ProductSearchButton" />
+        </Grid>
 
         <Label Grid.Row="1"
                Text="Product data from Open Food Facts, a free community database. Cocoa content isn't always recorded."

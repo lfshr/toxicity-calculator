@@ -9,10 +9,4 @@ public partial class ProductSearchPage : ContentPage
 		InitializeComponent();
 		BindingContext = viewModel;
 	}
-
-	protected override void OnAppearing()
-	{
-		base.OnAppearing();
-		SearchBox.Focus();
-	}
 }

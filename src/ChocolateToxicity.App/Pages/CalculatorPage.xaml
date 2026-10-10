@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
              x:Class="ChocolateToxicity.App.Pages.CalculatorPage"
              x:DataType="vm:CalculatorViewModel"
+             HideSoftInputOnTapped="True"
              Title="Chocolate toxicity">
 
     <ScrollView>
