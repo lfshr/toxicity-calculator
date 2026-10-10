@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.ProductSearchPage"
+             x:DataType="vm:ProductSearchViewModel"
+             HideSoftInputOnTapped="True"
+             Title="Search products">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" RowSpacing="12">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Grid.Column="0"
+                   Text="{Binding Query}"
+                   Placeholder="Brand and product, e.g. Lindt 70%"
+                   Keyboard="Text"
+                   ReturnType="Search"
+                   ReturnCommand="{Binding SearchCommand}"
+                   ClearButtonVisibility="WhileEditing"
+                   AutomationId="ProductSearchEntry" />
+            <Button Grid.Column="1"
+                    Text="Search"
+                    Command="{Binding SearchCommand}"
+                    AutomationId="ProductSearchButton" />
+        </Grid>
+
+        <Label Grid.Row="1"
+               Text="Product data from Open Food Facts, a free community database. Cocoa content isn't always recorded."
+               Style="{StaticResource HintLabel}" />
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <ActivityIndicator IsRunning="{Binding IsSearching}" IsVisible="{Binding IsSearching}" />
+            <Label Text="{Binding Message}"
+                   IsVisible="{Binding Message, Converter={StaticResource HasText}}"
+                   FontSize="15" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Results}"
+                        SelectionMode="None"
+                        AutomationId="ProductResults">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ProductResult">
+                    <Grid Padding="0,10,0,0" ColumnDefinitions="64,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="2">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChooseCommand, Source={RelativeSource AncestorType={x:Type vm:ProductSearchViewModel}}, x:DataType=vm:ProductSearchViewModel}"
+                                                  CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <Border Grid.RowSpan="2"
+                                WidthRequest="64"
+                                HeightRequest="64"
+                                VerticalOptions="Start"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}">
+                            <Image Source="{Binding ImageUrl}" Aspect="AspectFit" />
+                        </Border>
+                        <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Column="1" Grid.Row="1" Text="{Binding Detail}" Style="{StaticResource HintLabel}" FontSize="14" />
+                        <BoxView Grid.Row="2"
+                                 Grid.ColumnSpan="2"
+                                 HeightRequest="1"
+                                 Margin="0,8,0,0"
+                                 Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.CalculatorPage"
+             x:DataType="vm:CalculatorViewModel"
+             HideSoftInputOnTapped="True"
+             Title="Chocolate toxicity">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="Estimate the theobromine and caffeine dose a dog has eaten, and whether to consider inducing emesis."
+                   Style="{StaticResource HintLabel}"
+                   FontSize="15" />
+
+            <!-- Dog's weight -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Dog's weight (kg)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding DogWeightKg}"
+                       Placeholder="e.g. 12.5"
+                       Keyboard="Numeric"
+                       ReturnType="Next"
+                       AutomationId="DogWeightEntry" />
+                <Label Text="{Binding DogWeightError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding DogWeightError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- What was eaten -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="What was eaten" Style="{StaticResource FieldLabel}" />
+
+                <Button Text="Search products"
+                        Command="{Binding SearchProductsCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderWidth="1"
+                        AutomationId="SearchProductsButton" />
+
+                <Label Text="{Binding ProductNote}"
+                       Style="{StaticResource HintLabel}"
+                       IsVisible="{Binding ProductNote, Converter={StaticResource HasText}}" />
+
+                <HorizontalStackLayout Spacing="12" RadioButtonGroup.GroupName="ChocolateInput">
+                    <RadioButton Content="Chocolate type"
+                                 IsChecked="{Binding UseCocoaPercent, Converter={StaticResource InvertedBool}}" />
+                    <RadioButton Content="Cocoa % on label"
+                                 IsChecked="{Binding UseCocoaPercent}" />
+                </HorizontalStackLayout>
+
+                <Picker Title="Choose the type of chocolate"
+                        ItemsSource="{Binding ChocolateTypes}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=vm:ChocolateTypeOption}"
+                        SelectedItem="{Binding SelectedChocolateType}"
+                        IsVisible="{Binding UseCocoaPercent, Converter={StaticResource InvertedBool}}"
+                        AutomationId="ChocolateTypePicker" />
+
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding UseCocoaPercent}">
+                    <Entry Text="{Binding CocoaPercent}"
+                           Placeholder="e.g. 70"
+                           Keyboard="Numeric"
+                           AutomationId="CocoaPercentEntry" />
+                    <Label Text="For cocoa powder, choose Cocoa powder under Chocolate type instead: it is far stronger than a bar with the same percentage."
+                           Style="{StaticResource HintLabel}" />
+                </VerticalStackLayout>
+
+                <Label Text="{Binding ChocolateError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding ChocolateError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- Amount eaten -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Amount eaten (g)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding AmountEatenGrams}"
+                       Placeholder="e.g. 100"
+                       Keyboard="Numeric"
+                       ReturnType="Done"
+                       ReturnCommand="{Binding CalculateCommand}"
+                       AutomationId="AmountEatenEntry" />
+                <Label Text="If unsure, use the most that could have been eaten."
+                       Style="{StaticResource HintLabel}" />
+                <Button Text="{Binding WholePackText}"
+                        Command="{Binding UseWholePackCommand}"
+                        IsVisible="{Binding WholePackText, Converter={StaticResource HasText}}"
+                        HorizontalOptions="Start"
+                        Padding="14,6"
+                        FontSize="14"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                        BorderWidth="1" />
+                <Label Text="{Binding AmountEatenError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding AmountEatenError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <Button Text="Calculate"
+                    Command="{Binding CalculateCommand}"
+                    FontSize="18"
+                    HeightRequest="52"
+                    AutomationId="CalculateButton" />
+
+            <Button Text="Clear"
+                    Command="{Binding ClearCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BorderWidth="1" />
+
+            <Label Text="A decision aid for veterinary professionals, not a substitute for clinical judgement."
+                   Style="{StaticResource HintLabel}"
+                   HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

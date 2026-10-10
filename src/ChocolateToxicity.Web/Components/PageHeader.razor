@@ -1,0 +1,15 @@
+<div class="page-header">
+    <a class="back" href="@BackHref">&larr; @BackText</a>
+    <h1 tabindex="-1">@Title</h1>
+    @if (Intro is not null)
+    {
+        <p class="intro">@Intro</p>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Intro { get; set; }
+    [Parameter] public string BackHref { get; set; } = "./";
+    [Parameter] public string BackText { get; set; } = "All calculators";
+}

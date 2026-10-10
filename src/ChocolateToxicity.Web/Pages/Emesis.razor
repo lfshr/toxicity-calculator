@@ -1,0 +1,74 @@
+@page "/emesis"
+@inherits PatientPage
+
+<PageTitle>Emetics and charcoal - Vet Calculator</PageTitle>
+
+<PageHeader Title="Emetics and charcoal" Intro="Doses for inducing emesis in dogs and for a single dose of activated charcoal." />
+
+@if (Species == Species.Cat)
+{
+    <div class="notice warning" role="note">
+        <strong>These emetics are licensed for dogs only.</strong> Apomorphine and ropinirole are unreliable in cats;
+        alpha-2 agonists are usually used instead. Switch the header to Dog for these doses.
+    </div>
+}
+
+<div class="calc-form">
+    <PatientWeightField />
+</div>
+
+@if (WeightKg is { } kg)
+{
+    var sc = kg * Emetics.ApomorphineSubcutaneousMgPerKg;
+    var ivMin = kg * Emetics.ApomorphineIntravenousMinMgPerKg;
+    var ivMax = kg * Emetics.ApomorphineIntravenousMaxMgPerKg;
+    var clevor = Emetics.Ropinirole(kg);
+
+    <section class="result-card">
+        <h2>Apomorphine, subcutaneous</h2>
+        <p class="big" id="apomorphine-sc">@F(sc) mg = @F(sc / Emetics.ApomorphineConcentrationMgPerMl) mL</p>
+        <p class="hint">0.1 mg/kg SC of a 1 mg/mL solution (Emedog, Apometic), per the UK data sheet.</p>
+    </section>
+
+    <section class="result-card">
+        <h2>Apomorphine, intravenous</h2>
+        <p class="big">@F(ivMin)-@F(ivMax) mg = @F(ivMin)-@F(ivMax) mL</p>
+        <p class="hint">0.03-0.04 mg/kg IV (Merck Veterinary Manual), of a 1 mg/mL solution. Faster than SC; IV use is off-label.</p>
+    </section>
+
+    <section class="result-card">
+        <h2>Ropinirole eye drops (Clevor)</h2>
+        @if (clevor is not null)
+        {
+            <p class="big" id="clevor">@clevor.Drops @(clevor.Drops == 1 ? "drop" : "drops")</p>
+            <p>@clevor.Instructions</p>
+            <p class="hint">
+                @F(clevor.Micrograms) µg ropinirole, from the data sheet's weight table (target 3.75 mg/m²). If the dog hasn't vomited
+                within 15 minutes, the same dose can be repeated 15-20 minutes after the first.
+            </p>
+        }
+        else
+        {
+            <p>No dose: Clevor's data sheet covers dogs from @F(Emetics.ClevorMinWeightKg) to @F(Emetics.ClevorMaxWeightKg) kg.</p>
+        }
+    </section>
+
+    <section class="result-card">
+        <h2>Activated charcoal</h2>
+        <p class="big" id="charcoal">@F(kg * Emetics.CharcoalMinGramsPerKg)-@F(kg * Emetics.CharcoalMaxGramsPerKg) g</p>
+        <p class="hint">
+            1-2 g/kg PO, once (Merck Veterinary Manual, chocolate toxicosis). For the volume, divide by the product's strength:
+            a 200 mg/mL (20%) suspension would be @F(kg * Emetics.CharcoalMinGramsPerKg * 5)-@F(kg * Emetics.CharcoalMaxGramsPerKg * 5) mL.
+            Don't give to a patient that can't protect its airway.
+        </p>
+    </section>
+
+    <p class="hint">
+        Consider emesis within about 2 hours of ingestion in a patient that is clinically normal. Don't induce emesis in a
+        patient that is seizing, sedated, has a reduced gag reflex, or has eaten something corrosive or sharp.
+    </p>
+}
+else
+{
+    <AwaitingInput>Enter the weight to see the doses.</AwaitingInput>
+}

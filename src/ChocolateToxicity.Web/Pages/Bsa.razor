@@ -1,0 +1,51 @@
+@page "/bsa"
+@inherits PatientPage
+
+<PageTitle>Body surface area and calories - Vet Calculator</PageTitle>
+
+<PageHeader Title="Body surface area and calories" Intro="BSA for drugs dosed per m², and daily energy needs for feeding plans." />
+
+<div class="calc-form">
+    <PatientWeightField />
+</div>
+
+@if (WeightKg is { } kg)
+{
+    var bsa = BodySurfaceArea.SquareMetres(Species, kg);
+    var rer = EnergyRequirement.RestingKcalPerDay(kg);
+
+    <section class="result-card" id="bsa-result">
+        <h2>Body surface area</h2>
+        <p class="big">@bsa.ToString("0.000", CultureInfo.CurrentCulture) m²</p>
+        <p class="hint">@(Species == Species.Cat ? "10.0" : "10.1") x (weight in g)<sup>2/3</sup> x 10<sup>-4</sup> (Merck Veterinary Manual).</p>
+
+        <Field Label="Dose per m² (optional)" For="per-m2">
+            <NumberInput Id="per-m2" Value="@perM2Text" ValueChanged="v => perM2Text = v" Unit="mg/m²" Placeholder="e.g. 0.7" />
+        </Field>
+        @if (Parse(perM2Text) is > 0 and var perM2)
+        {
+            <p class="big">@F(perM2 * bsa) mg</p>
+        }
+    </section>
+
+    <section class="result-card" id="energy-result">
+        <h2>Energy</h2>
+        <p class="big">RER @F(rer) kcal/day</p>
+        <p class="hint">70 x weight<sup>0.75</sup>. Feed hospitalised patients at RER, starting at a third to a half on day one after a long fast.</p>
+        <table class="breakdown">
+            @foreach (var factor in EnergyRequirement.Factors.Where(f => f.Species == Species))
+            {
+                <tr><td>@factor.Name</td><td class="hint">x @F(factor.Factor)</td><td>@F(rer * factor.Factor) kcal/day</td></tr>
+            }
+        </table>
+        <p class="hint">Starting points from the WSAVA nutrition guidelines; adjust to body condition.</p>
+    </section>
+}
+else
+{
+    <AwaitingInput>Enter the weight to see the BSA and energy needs.</AwaitingInput>
+}
+
+@code {
+    private string perM2Text = "";
+}

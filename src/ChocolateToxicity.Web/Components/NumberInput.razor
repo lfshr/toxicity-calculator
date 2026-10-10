@@ -1,0 +1,20 @@
+@* A text box for a number, with the unit shown after it. Uses a decimal keypad on phones. *@
+<div class="number-input">
+    <input id="@Id" type="text" inputmode="decimal" autocomplete="off" placeholder="@Placeholder"
+           value="@Value" @oninput="OnInput" aria-invalid="@(Invalid ? "true" : "false")" />
+    @if (Unit is not null)
+    {
+        <span class="unit">@Unit</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    private Task OnInput(ChangeEventArgs e) => ValueChanged.InvokeAsync(e.Value?.ToString() ?? "");
+}

@@ -1,0 +1,18 @@
+@inject PatientState Patient
+@implements IDisposable
+
+@if (Patient.Species == Species.Cat)
+{
+    <div class="notice warning" role="note">
+        <strong>These thresholds are for dogs.</strong> Cats can be more sensitive, so treat this as a minimum estimate
+        and check a feline reference.
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Patient.Changed += Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Patient.Changed -= Refresh;
+}

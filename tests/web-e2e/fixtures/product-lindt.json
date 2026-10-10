@@ -1,0 +1,13 @@
+{
+  "status": 1,
+  "product": {
+    "code": "3046920022606",
+    "product_name": "Excellence 70% Cacao",
+    "brands": "Lindt",
+    "quantity": "100 g",
+    "product_quantity": "100",
+    "product_quantity_unit": "g",
+    "nutriments": { "cocoa": 70, "cocoa_100g": 70 },
+    "categories_tags": ["en:chocolates", "en:dark-chocolates"]
+  }
+}

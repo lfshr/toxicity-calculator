@@ -1,0 +1,81 @@
+@page "/toxins/chocolate/search"
+@implements IDisposable
+@inject WebNavigationService Navigation
+@inject NavigationManager NavigationManager
+
+<PageTitle>Search products - Vet Calculator</PageTitle>
+
+<PageHeader Title="Search products" BackHref="toxins/chocolate" BackText="Chocolate"
+            Intro="Look a product up on Open Food Facts, a free, open product database, to fill in its cocoa content." />
+
+@if (search is not null)
+{
+    <form class="search-form" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+        <input id="query" type="search" placeholder="Brand and product, e.g. Lindt 70%" value="@search.Query"
+               @oninput="e => search.Query = e.Value?.ToString() ?? string.Empty" aria-label="Product name" />
+        <button type="submit" class="primary" disabled="@(!search.SearchCommand.CanExecute(null) || search.IsSearching)">Search</button>
+    </form>
+    <p class="hint">Open Food Facts allows about 10 searches a minute, so search runs when you press Search.</p>
+
+    @if (search.IsSearching)
+    {
+        <p class="status" role="status"><span class="spinner"></span> @(search.Message ?? "Searching...")</p>
+    }
+    else if (search.Message is not null)
+    {
+        <p class="notice info" role="status">@search.Message</p>
+    }
+
+    <ul class="results">
+        @foreach (var result in search.Results)
+        {
+            <li>
+                <button type="button" class="result" disabled="@search.IsSearching" @onclick="() => search.ChooseCommand.ExecuteAsync(result)">
+                    @if (result.ImageUrl is not null)
+                    {
+                        <img src="@result.ImageUrl" alt="" loading="lazy" />
+                    }
+                    else
+                    {
+                        <span class="no-image" aria-hidden="true"></span>
+                    }
+                    <span class="result-text">
+                        <strong>@result.Title</strong>
+                        <span>@result.Detail</span>
+                    </span>
+                </button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private ProductSearchViewModel? search;
+
+    protected override void OnInitialized()
+    {
+        search = Navigation.CurrentSearch;
+        if (search is null)
+        {
+            // Opened directly (for example after a reload): the search belongs to the chocolate form.
+            NavigationManager.NavigateTo("toxins/chocolate");
+            return;
+        }
+
+        search.PropertyChanged += Refresh;
+        search.Results.CollectionChanged += Refresh;
+    }
+
+    private Task SearchAsync() => search!.SearchCommand.ExecuteAsync(null);
+
+    private void Refresh(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (search is not null)
+        {
+            search.PropertyChanged -= Refresh;
+            search.Results.CollectionChanged -= Refresh;
+        }
+    }
+}

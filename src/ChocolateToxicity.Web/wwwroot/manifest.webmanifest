@@ -1,0 +1,16 @@
+{
+  "name": "Vet Calculator",
+  "short_name": "Vet Calc",
+  "description": "Toxicity, emetic, CPR, fluid, CRI and dosing calculators for veterinary professionals.",
+  "id": "./",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f3",
+  "theme_color": "#5d3a1a",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ]
+}
