@@ -1,0 +1,43 @@
+# Temporary: builds the Release APK (debug-signed) and pushes it to the claude/apk-build-output branch,
+# so it can be fetched and signed with the release key outside GitHub. Delete with this branch.
+name: APK scratch build
+
+on:
+  push:
+    branches: [claude/apk-build-scratch]
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: 21
+      - run: dotnet workload install maui-android
+      - run: >
+          dotnet build src/ChocolateToxicity.App -f net10.0-android
+          -t:InstallAndroidDependencies
+          -p:AndroidSdkDirectory="$ANDROID_HOME"
+          -p:AcceptAndroidSDKLicenses=true
+      - run: >
+          dotnet publish src/ChocolateToxicity.App -f net10.0-android --configuration Release
+          -p:AndroidSdkDirectory="$ANDROID_HOME"
+      - name: Push the APK to the output branch
+        run: |
+          mkdir out
+          cp src/ChocolateToxicity.App/bin/Release/net10.0-android/publish/*-Signed.apk out/app.apk
+          cd out
+          git init -q -b output
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add app.apk
+          git commit -q -m "APK built from ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" output:refs/heads/claude/apk-build-output
