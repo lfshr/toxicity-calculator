@@ -29,14 +29,12 @@ public sealed class ProductResult(ChocolateProduct product)
             {
                 parts.Add(ChocolateTypeOption.For(type).Name);
             }
-            else
+            else if (parts.Count == 0)
             {
-                parts.Add("Cocoa % not listed: you'll pick the type");
+                parts.Add("Tap to check cocoa content");
             }
 
             return string.Join(" · ", parts);
         }
     }
-
-    public bool HasCocoaInfo => Product.CocoaPercent is not null || Product.SuggestedType is not null;
 }

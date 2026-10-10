@@ -125,20 +125,92 @@ public class OpenFoodFactsProductSearchTests
         Assert.Null(products.Single(p => p.Barcode == "6").PackWeightGrams);
     }
 
+    // Shaped like a Search-a-licious response, which lists products under "hits" and can give
+    // names by language and brands as a list.
+    private const string SearchaliciousResponse = """
+        {
+          "hits": [
+            {
+              "code": "7622210449283",
+              "product_name": { "en": "Dairy Milk", "main": "Dairy Milk" },
+              "brands": ["Cadbury"],
+              "quantity": "110 g",
+              "product_quantity": 110,
+              "categories": ["en:chocolates", "en:milk-chocolates"]
+            },
+            { "code": "2", "product_name": { "fr": "Chocolat noir 72%" }, "brands": "Côte d'Or" }
+          ],
+          "count": 2, "page": 1, "page_size": 25, "page_count": 1, "took": 5, "timed_out": false, "is_count_exact": true
+        }
+        """;
+
     [Fact]
-    public async Task Sends_the_query_with_an_identifying_user_agent()
+    public void Reads_search_a_licious_hits()
     {
-        var handler = new StubHandler(HttpStatusCode.OK, SearchResponse);
+        var products = OpenFoodFactsProductSearch.ParseSearchResponse(
+            System.Text.Json.JsonDocument.Parse(SearchaliciousResponse).RootElement);
+
+        Assert.Equal(2, products.Count);
+        Assert.Equal("Dairy Milk", products[0].Name);
+        Assert.Equal("Cadbury", products[0].Brand);
+        Assert.Equal(110, products[0].PackWeightGrams);
+        Assert.Equal(ChocolateType.Milk, products[0].SuggestedType);
+        Assert.Equal("Chocolat noir 72%", products[1].Name);
+        Assert.Equal(72, products[1].CocoaPercent);
+    }
+
+    [Fact]
+    public async Task Searches_search_a_licious_with_an_identifying_user_agent()
+    {
+        var handler = new StubHandler(HttpStatusCode.OK, SearchaliciousResponse);
         var search = new OpenFoodFactsProductSearch(new HttpClient(handler));
 
         var products = await search.SearchAsync("lindt 70%");
 
-        Assert.Equal(6, products.Count);
-        var request = Assert.IsType<HttpRequestMessage>(handler.Request);
-        Assert.Equal("world.openfoodfacts.org", request.RequestUri!.Host);
-        Assert.Contains("search_terms=lindt%2070%25", request.RequestUri.Query);
-        Assert.Contains("json=1", request.RequestUri.Query);
+        Assert.Equal(2, products.Count);
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal("search.openfoodfacts.org", request.RequestUri!.Host);
+        Assert.Contains("q=lindt%2070%25", request.RequestUri.Query);
         Assert.Contains("ChocolateToxicityCalculator", request.Headers.UserAgent.ToString());
+    }
+
+    [Fact]
+    public async Task Falls_back_to_the_older_search_when_search_a_licious_fails()
+    {
+        var handler = new StubHandler(
+            (HttpStatusCode.ServiceUnavailable, ""),
+            (HttpStatusCode.OK, SearchResponse));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler));
+
+        var products = await search.SearchAsync("lindt");
+
+        Assert.Equal(6, products.Count);
+        Assert.Equal(["search.openfoodfacts.org", "world.openfoodfacts.org"], handler.Requests.Select(r => r.RequestUri!.Host));
+        Assert.Contains("search_terms=lindt", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task Gets_a_products_full_record()
+    {
+        const string body = """
+            { "status": 1, "code": "3046920022606",
+              "product": { "code": "3046920022606", "product_name": "Excellence 70% Cacao", "nutriments": { "cocoa_100g": 70 } } }
+            """;
+        var handler = new StubHandler(HttpStatusCode.OK, body);
+
+        var product = await new OpenFoodFactsProductSearch(new HttpClient(handler)).GetProductAsync("3046920022606");
+
+        Assert.Equal(70, product?.CocoaPercent);
+        Assert.Equal(CocoaPercentSource.LabelData, product?.CocoaPercentSource);
+        Assert.Equal("/api/v2/product/3046920022606.json", handler.Requests[0].RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task Missing_product_record_gives_null()
+    {
+        var handler = new StubHandler(HttpStatusCode.NotFound, """{ "status": 0 }""");
+
+        Assert.Null(await new OpenFoodFactsProductSearch(new HttpClient(handler)).GetProductAsync("123"));
     }
 
     [Fact]
@@ -149,7 +221,7 @@ public class OpenFoodFactsProductSearchTests
         var products = await new OpenFoodFactsProductSearch(new HttpClient(handler)).SearchAsync("  ");
 
         Assert.Empty(products);
-        Assert.Null(handler.Request);
+        Assert.Empty(handler.Requests);
     }
 
     [Theory]
@@ -186,27 +258,36 @@ public class OpenFoodFactsProductSearchTests
 
     private sealed class StubHandler : HttpMessageHandler
     {
-        private readonly HttpStatusCode _status;
-        private readonly string _body = "";
+        private readonly Queue<(HttpStatusCode Status, string Body)> _responses = new();
         private readonly Exception? _failure;
 
-        public StubHandler(HttpStatusCode status, string body) => (_status, _body) = (status, body);
+        public StubHandler(HttpStatusCode status, string body) => _responses.Enqueue((status, body));
+
+        public StubHandler(params (HttpStatusCode Status, string Body)[] responses)
+        {
+            foreach (var response in responses)
+            {
+                _responses.Enqueue(response);
+            }
+        }
 
         public StubHandler(Exception failure) => _failure = failure;
 
-        public HttpRequestMessage? Request { get; private set; }
+        public List<HttpRequestMessage> Requests { get; } = [];
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Request = request;
+            Requests.Add(request);
             if (_failure is not null)
             {
                 throw _failure;
             }
 
-            return Task.FromResult(new HttpResponseMessage(_status)
+            // The last response repeats, so a single response answers every request.
+            var (status, body) = _responses.Count > 1 ? _responses.Dequeue() : _responses.Peek();
+            return Task.FromResult(new HttpResponseMessage(status)
             {
-                Content = new StringContent(_body, Encoding.UTF8, "application/json"),
+                Content = new StringContent(body, Encoding.UTF8, "application/json"),
             });
         }
     }

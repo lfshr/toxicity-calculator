@@ -37,9 +37,14 @@ internal sealed class FakeProductSearch : IProductSearch
 
     public string? LastQuery { get; private set; }
 
+    public Dictionary<string, ChocolateProduct> Details { get; } = [];
+
     public Task<IReadOnlyList<ChocolateProduct>> SearchAsync(string query, CancellationToken cancellationToken = default)
     {
         LastQuery = query;
         return Failure is null ? Task.FromResult(Products) : Task.FromException<IReadOnlyList<ChocolateProduct>>(Failure);
     }
+
+    public Task<ChocolateProduct?> GetProductAsync(string barcode, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Details.GetValueOrDefault(barcode));
 }

@@ -41,7 +41,7 @@ public class ProductSearchViewModelTests
         Assert.Equal("chocolate", _search.LastQuery);
         Assert.Null(_viewModel.Message);
         Assert.False(_viewModel.IsSearching);
-        Assert.Equal(["100 g · 70% cocoa", "110 g · Milk chocolate", "Cocoa % not listed: you'll pick the type"],
+        Assert.Equal(["100 g · 70% cocoa", "110 g · Milk chocolate", "Tap to check cocoa content"],
             _viewModel.Results.Select(r => r.Detail));
         Assert.Equal("Excellence 70% (Lindt)", _viewModel.Results[0].Title);
     }
@@ -67,6 +67,20 @@ public class ProductSearchViewModelTests
 
         Assert.StartsWith("Couldn't reach Open Food Facts.", _viewModel.Message);
         Assert.False(_viewModel.IsSearching);
+    }
+
+    [Fact]
+    public async Task Choosing_a_product_uses_its_full_record_when_that_has_cocoa_data()
+    {
+        var found = new ChocolateProduct("1", "Bar", null, null, null, null, null, null);
+        var details = found with { CocoaPercent = 70, CocoaPercentSource = CocoaPercentSource.LabelData };
+        _search.Details["1"] = details;
+
+        await _viewModel.ChooseCommand.ExecuteAsync(new ProductResult(found));
+
+        Assert.Equal([details], _chosen);
+        Assert.False(_viewModel.IsSearching);
+        Assert.Null(_viewModel.Message);
     }
 
     [Fact]

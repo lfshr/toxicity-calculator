@@ -10,15 +10,19 @@ namespace ChocolateToxicity.ProductSearch;
 /// Searches the Open Food Facts product database (https://world.openfoodfacts.org), a free, open database.
 /// </summary>
 /// <remarks>
-/// Full-text search uses the /cgi/search.pl endpoint. Open Food Facts limits search to 10 requests a minute
-/// per IP address, so search runs when the user asks rather than as they type. Requests must carry a
-/// User-Agent naming the app: https://openfoodfacts.github.io/openfoodfacts-server/api/
+/// Full-text search goes to Search-a-licious (https://search.openfoodfacts.org), the search service Open Food Facts
+/// recommends, and falls back to the older /cgi/search.pl endpoint if that fails. Open Food Facts limits search to
+/// 10 requests a minute per IP address, so search runs when the user asks rather than as they type. Search results
+/// may lack nutriment data, so the chosen product's full record is fetched from the product API (15 requests a
+/// minute). Requests must carry a User-Agent naming the app: https://openfoodfacts.github.io/openfoodfacts-server/api/
 /// </remarks>
 public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : IProductSearch
 {
     public const string UserAgent = "ChocolateToxicityCalculator/1.0 (https://github.com/lfshr/toxicity-calculator)";
 
-    private const string BaseUrl = "https://world.openfoodfacts.org/cgi/search.pl";
+    private const string SearchUrl = "https://search.openfoodfacts.org/search";
+    private const string LegacySearchUrl = "https://world.openfoodfacts.org/cgi/search.pl";
+    private const string ProductUrl = "https://world.openfoodfacts.org/api/v2/product/";
     private const string Fields = "code,product_name,brands,quantity,product_quantity,product_quantity_unit,nutriments,categories_tags";
     private const int PageSize = 25;
 
@@ -29,8 +33,43 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
             return [];
         }
 
-        var url = $"{BaseUrl}?search_terms={Uri.EscapeDataString(query.Trim())}&search_simple=1&action=process&json=1" +
-                  $"&page_size={PageSize}&fields={Fields}";
+        var terms = Uri.EscapeDataString(query.Trim());
+        try
+        {
+            using var document = await GetJsonAsync($"{SearchUrl}?q={terms}&langs=en,main&page_size={PageSize}&fields={Fields}", cancellationToken);
+            return ParseSearchResponse(document.RootElement);
+        }
+        catch (ProductSearchException)
+        {
+            using var document = await GetJsonAsync(
+                $"{LegacySearchUrl}?search_terms={terms}&search_simple=1&action=process&json=1&page_size={PageSize}&fields={Fields}",
+                cancellationToken);
+            return ParseSearchResponse(document.RootElement);
+        }
+    }
+
+    public async Task<ChocolateProduct?> GetProductAsync(string barcode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = await GetJsonAsync($"{ProductUrl}{Uri.EscapeDataString(barcode)}.json?fields={Fields}", cancellationToken);
+            return document.RootElement.TryGetProperty("product", out var product) && product.ValueKind == JsonValueKind.Object
+                ? ParseProduct(product)
+                : null;
+        }
+        catch (ProductSearchException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<JsonDocument> GetJsonAsync(string url, CancellationToken cancellationToken)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.UserAgent.ParseAdd(UserAgent);
 
@@ -48,8 +87,7 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
-            return ParseSearchResponse(document.RootElement);
+            return await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
         }
         catch (HttpRequestException ex)
         {
@@ -65,10 +103,14 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
         }
     }
 
-    /// <summary>Reads the products from a search response, skipping any without a name.</summary>
+    /// <summary>
+    /// Reads the products from a search response, skipping any without a name. Search-a-licious lists them under
+    /// "hits" and the older search under "products".
+    /// </summary>
     public static IReadOnlyList<ChocolateProduct> ParseSearchResponse(JsonElement root)
     {
-        if (!root.TryGetProperty("products", out var products) || products.ValueKind != JsonValueKind.Array)
+        if (!(root.TryGetProperty("hits", out var products) || root.TryGetProperty("products", out products)) ||
+            products.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
@@ -87,13 +129,13 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
 
     public static ChocolateProduct? ParseProduct(JsonElement product)
     {
-        var name = GetString(product, "product_name")?.Trim();
+        var name = GetText(product, "product_name")?.Trim();
         if (string.IsNullOrEmpty(name))
         {
             return null;
         }
 
-        var brand = GetString(product, "brands")?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var brand = GetText(product, "brands")?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         var categories = GetCategories(product);
         var suggestedType = SuggestType(categories);
 
@@ -115,7 +157,7 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
         }
 
         return new ChocolateProduct(
-            Barcode: GetString(product, "code") ?? "",
+            Barcode: GetText(product, "code") ?? "",
             Name: name,
             Brand: brand,
             Quantity: GetString(product, "quantity")?.Trim() is { Length: > 0 } quantity ? quantity : null,
@@ -197,7 +239,8 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
 
     private static IReadOnlyCollection<string> GetCategories(JsonElement product)
     {
-        if (!product.TryGetProperty("categories_tags", out var tags) || tags.ValueKind != JsonValueKind.Array)
+        if (!(product.TryGetProperty("categories_tags", out var tags) || product.TryGetProperty("categories", out tags)) ||
+            tags.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
@@ -206,6 +249,44 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
             .Where(t => t.ValueKind == JsonValueKind.String)
             .Select(t => t.GetString()!)
             .ToHashSet(StringComparer.Ordinal);
+    }
+
+    // Text that may come as a plain string, a list (Search-a-licious brands), or names by language
+    // (Search-a-licious product names), in which case English, then the product's main language, is preferred.
+    private static string? GetText(JsonElement element, string property)
+    {
+        if (!element.TryGetProperty(property, out var value))
+        {
+            return null;
+        }
+
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.String:
+                return value.GetString();
+            case JsonValueKind.Number:
+                return value.GetRawText();
+            case JsonValueKind.Array:
+                var items = value.EnumerateArray().Where(i => i.ValueKind == JsonValueKind.String).Select(i => i.GetString()).ToList();
+                return items.Count == 0 ? null : string.Join(",", items);
+            case JsonValueKind.Object:
+                foreach (var language in (string[])["en", "main"])
+                {
+                    if (value.TryGetProperty(language, out var named) && named.ValueKind == JsonValueKind.String &&
+                        !string.IsNullOrWhiteSpace(named.GetString()))
+                    {
+                        return named.GetString();
+                    }
+                }
+
+                return value.EnumerateObject()
+                    .Select(p => p.Value)
+                    .Where(v => v.ValueKind == JsonValueKind.String)
+                    .Select(v => v.GetString())
+                    .FirstOrDefault(text => !string.IsNullOrWhiteSpace(text));
+            default:
+                return null;
+        }
     }
 
     private static string? GetString(JsonElement element, string property) =>

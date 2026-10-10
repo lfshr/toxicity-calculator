@@ -60,7 +60,8 @@ disclaimer. Numbers can be typed with either a full stop or the device's decimal
 ### Product search
 
 "Search products" looks the product up on [Open Food Facts](https://world.openfoodfacts.org), a free, open
-product database, and fills in the chocolate from the chosen result:
+product database. Search goes to Open Food Facts' Search-a-licious service, falling back to its older search if
+that fails, and the chosen product's full record is then fetched for its cocoa data. The chocolate is filled in from:
 
 1. The cocoa percentage recorded from the label (Open Food Facts' "cocoa" nutriment), if there is one.
 2. Otherwise a percentage in the product name, such as "Excellence 70% Cacao", but only when the name or category

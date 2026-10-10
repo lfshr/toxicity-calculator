@@ -63,7 +63,20 @@ public partial class ProductSearchViewModel(
             return;
         }
 
-        onProductChosen(result.Product);
+        // Search results can lack cocoa data, so fetch the full record; fall back to the result if that fails.
+        IsSearching = true;
+        Message = "Checking the product's cocoa content...";
+        try
+        {
+            var details = await productSearch.GetProductAsync(result.Product.Barcode);
+            onProductChosen(details is { CocoaPercent: not null } or { SuggestedType: not null } ? details : result.Product);
+        }
+        finally
+        {
+            IsSearching = false;
+            Message = null;
+        }
+
         await navigation.GoBackAsync();
     }
 }
