@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.XylitolPage"
+             x:DataType="vm:XylitolViewModel"
+             HideSoftInputOnTapped="True"
+             Title="Xylitol">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="Estimate the xylitol dose a dog has eaten, and whether to consider inducing emesis."
+                   Style="{StaticResource HintLabel}"
+                   FontSize="15" />
+
+            <!-- Dog's weight -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Dog's weight (kg)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding DogWeightKg}" Placeholder="e.g. 12.5" Keyboard="Numeric" ReturnType="Next" />
+                <Label Text="{Binding DogWeightError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding DogWeightError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- Xylitol eaten -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Xylitol eaten" Style="{StaticResource FieldLabel}" />
+                <HorizontalStackLayout Spacing="12" RadioButtonGroup.GroupName="XylitolInput">
+                    <RadioButton Content="From the label"
+                                 IsChecked="{Binding UseKnownAmount, Converter={StaticResource InvertedBool}}" />
+                    <RadioButton Content="Amount known"
+                                 IsChecked="{Binding UseKnownAmount}" />
+                </HorizontalStackLayout>
+
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding UseKnownAmount, Converter={StaticResource InvertedBool}}">
+                    <Label Text="Product eaten (g)" />
+                    <Entry Text="{Binding ProductEatenGrams}" Placeholder="e.g. 20" Keyboard="Numeric" />
+                    <Label Text="{Binding ProductEatenError}"
+                           Style="{StaticResource ErrorLabel}"
+                           IsVisible="{Binding ProductEatenError, Converter={StaticResource HasText}}" />
+                    <Label Text="Xylitol per 100 g (from the label)" />
+                    <Entry Text="{Binding XylitolPer100g}"
+                           Placeholder="e.g. 60"
+                           Keyboard="Numeric"
+                           ReturnType="Done"
+                           ReturnCommand="{Binding CalculateCommand}" />
+                    <Label Text="Pure xylitol sweetener is 100 g per 100 g. If the label only gives polyols, use that figure: treating all of it as xylitol errs towards treating."
+                           Style="{StaticResource HintLabel}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6" IsVisible="{Binding UseKnownAmount}">
+                    <Label Text="Xylitol eaten (g)" />
+                    <Entry Text="{Binding XylitolEatenGrams}"
+                           Placeholder="e.g. 1.5"
+                           Keyboard="Numeric"
+                           ReturnType="Done"
+                           ReturnCommand="{Binding CalculateCommand}" />
+                    <Label Text="For gum, multiply the pieces eaten by the xylitol per piece; the manufacturer can usually say how much that is."
+                           Style="{StaticResource HintLabel}" />
+                </VerticalStackLayout>
+
+                <Label Text="{Binding XylitolError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding XylitolError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <Button Text="Calculate" Command="{Binding CalculateCommand}" FontSize="18" HeightRequest="52" />
+            <Button Text="Clear" Command="{Binding ClearCommand}" Style="{StaticResource OutlineButton}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

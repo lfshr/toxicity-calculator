@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="Toxicity calculator">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="What has the dog eaten?"
+                   Style="{StaticResource FieldLabel}"
+                   FontSize="18" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Toxins}" Spacing="10">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ToxinOption">
+                        <Border StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                Padding="16,14">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ChooseCommand, Source={RelativeSource AncestorType={x:Type vm:HomeViewModel}}, x:DataType=vm:HomeViewModel}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Spacing="2">
+                                    <Label Text="{Binding Name}" Style="{StaticResource FieldLabel}" FontSize="17" />
+                                    <Label Text="{Binding Detail}" Style="{StaticResource HintLabel}" FontSize="14" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1"
+                                       Text="›"
+                                       FontSize="28"
+                                       VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label Text="Dogs only. A decision aid for veterinary professionals, not a substitute for clinical judgement."
+                   Style="{StaticResource HintLabel}"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,8,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

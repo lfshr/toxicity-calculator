@@ -11,7 +11,7 @@
         <VerticalStackLayout Padding="20" Spacing="16">
 
             <!-- Verdict -->
-            <Border BackgroundColor="{Binding Band, Converter={StaticResource SeverityColor}}"
+            <Border BackgroundColor="{Binding Risk, Converter={StaticResource RiskColor}}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 12"
                     Padding="20">
@@ -50,8 +50,12 @@
                 <Label Text="{Binding Working}" Style="{StaticResource HintLabel}" />
             </VerticalStackLayout>
 
-            <Label Text="Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg."
-                   Style="{StaticResource HintLabel}" />
+            <VerticalStackLayout Spacing="4" IsVisible="{Binding Advice, Converter={StaticResource HasText}}">
+                <Label Text="Treatment notes" Style="{StaticResource FieldLabel}" />
+                <Label Text="{Binding Advice}" FontSize="15" />
+            </VerticalStackLayout>
+
+            <Label Text="{Binding ThresholdsText}" Style="{StaticResource HintLabel}" />
 
             <Label Text="{Binding Disclaimer}" Style="{StaticResource HintLabel}" />
 

@@ -25,7 +25,7 @@ public class CalculatorViewModelTests
         await _viewModel.CalculateCommand.ExecuteAsync(null);
 
         var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
-        Assert.Equal(23, shown.Result.DoseMgPerKg, 6);
+        Assert.Equal(23, shown.Result!.DoseMgPerKg, 6);
         Assert.True(shown.EmesisIndicated);
         Assert.Equal("Consider inducing emesis", shown.Verdict);
         Assert.Equal("23 mg/kg", shown.Dose);
@@ -44,7 +44,7 @@ public class CalculatorViewModelTests
 
         var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
         var expected = ToxicityCalculator.CalculateFromCocoaPercent(70, 50, 20);
-        Assert.Equal(expected.DoseMgPerKg, shown.Result.DoseMgPerKg, 6);
+        Assert.Equal(expected.DoseMgPerKg, shown.Result!.DoseMgPerKg, 6);
         Assert.Contains("70% cocoa chocolate", shown.Summary);
     }
 
@@ -135,7 +135,7 @@ public class CalculatorViewModelTests
         await _viewModel.CalculateCommand.ExecuteAsync(null);
 
         var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
-        Assert.Equal(2.3 * 25.5 / 12.5, shown.Result.DoseMgPerKg, 6);
+        Assert.Equal(2.3 * 25.5 / 12.5, shown.Result!.DoseMgPerKg, 6);
     }
 
     [Fact]

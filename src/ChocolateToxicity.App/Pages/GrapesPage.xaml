@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.GrapesPage"
+             x:DataType="vm:GrapesViewModel"
+             HideSoftInputOnTapped="True"
+             Title="Grapes and raisins">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="There is no established safe dose of grapes or raisins: any amount can cause kidney injury in a susceptible dog. This shows the dose against the lowest doses reported to cause it."
+                   Style="{StaticResource HintLabel}"
+                   FontSize="15" />
+
+            <!-- Dog's weight -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Dog's weight (kg)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding DogWeightKg}" Placeholder="e.g. 12.5" Keyboard="Numeric" ReturnType="Next" />
+                <Label Text="{Binding DogWeightError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding DogWeightError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- What was eaten -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="What was eaten" Style="{StaticResource FieldLabel}" />
+                <Picker Title="Choose grapes or dried fruit"
+                        ItemsSource="{Binding Forms}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=vm:GrapeFormOption}"
+                        SelectedItem="{Binding SelectedForm}" />
+                <Label Text="Currants here means dried Zante currants. Fresh blackcurrants and redcurrants are not implicated."
+                       Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding FormError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding FormError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- Amount eaten -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Amount eaten (g)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding AmountEatenGrams}"
+                       Placeholder="e.g. 50"
+                       Keyboard="Numeric"
+                       ReturnType="Done"
+                       ReturnCommand="{Binding CalculateCommand}" />
+                <Label Text="If unsure, use the most that could have been eaten. A snack box of raisins is usually 14 g."
+                       Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding AmountEatenError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding AmountEatenError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <Button Text="Calculate" Command="{Binding CalculateCommand}" FontSize="18" HeightRequest="52" />
+            <Button Text="Clear" Command="{Binding ClearCommand}" Style="{StaticResource OutlineButton}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

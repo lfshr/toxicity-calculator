@@ -4,12 +4,12 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:ChocolateToxicity.App.Pages"
-    Title="Chocolate Toxicity"
+    Title="Toxicity Calculator"
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Chocolate toxicity"
-        ContentTemplate="{DataTemplate pages:CalculatorPage}"
-        Route="calculator" />
+        Title="Toxicity calculator"
+        ContentTemplate="{DataTemplate pages:HomePage}"
+        Route="home" />
 
 </Shell>

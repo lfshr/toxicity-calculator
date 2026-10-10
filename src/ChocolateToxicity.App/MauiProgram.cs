@@ -22,8 +22,16 @@ public static class MauiProgram
 		builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
 		builder.Services.AddSingleton<IProductSearch>(_ =>
 			new OpenFoodFactsProductSearch(new HttpClient { Timeout = TimeSpan.FromSeconds(20) }));
+		builder.Services.AddTransient<HomeViewModel>();
+		builder.Services.AddTransient<HomePage>();
 		builder.Services.AddTransient<CalculatorViewModel>();
 		builder.Services.AddTransient<CalculatorPage>();
+		builder.Services.AddTransient<GrapesViewModel>();
+		builder.Services.AddTransient<GrapesPage>();
+		builder.Services.AddTransient<XylitolViewModel>();
+		builder.Services.AddTransient<XylitolPage>();
+		builder.Services.AddTransient<RatBaitViewModel>();
+		builder.Services.AddTransient<RatBaitPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();

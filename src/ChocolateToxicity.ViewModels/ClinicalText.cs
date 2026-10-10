@@ -11,6 +11,11 @@ public static class ClinicalText
         "Consider time since ingestion, other ingredients (such as raisins, xylitol or macadamia nuts) " +
         "and the patient's condition before inducing emesis.";
 
+    public const string GeneralDisclaimer =
+        "A decision aid for veterinary professionals, not a substitute for clinical judgement. " +
+        "Individual dogs vary in sensitivity. Consider time since ingestion, anything else eaten " +
+        "and the patient's condition before inducing emesis.";
+
     public static string BandTitle(SeverityBand band) => band switch
     {
         SeverityBand.None => "Below toxic dose",
