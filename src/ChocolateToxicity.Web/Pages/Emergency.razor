@@ -1,0 +1,73 @@
+@page "/emergency"
+@inherits PatientPage
+
+<PageTitle>CPR drugs - Vet Calculator</PageTitle>
+
+<PageHeader Title="CPR drugs" Intro="RECOVER 2024 doses for dogs and cats, with volumes at the concentration shown. Check the concentration against the vial." />
+
+<div class="calc-form">
+    <PatientWeightField />
+</div>
+
+@if (WeightKg is { } kg)
+{
+    var (exMin, exMax) = EmergencyDrugs.ExternalDefibrillation(kg, biphasic);
+    var (inMin, inMax) = EmergencyDrugs.InternalDefibrillation(kg, biphasic);
+
+    <div class="table-scroll">
+        <table class="dose-table" id="cpr-table">
+            <thead>
+                <tr><th>Drug</th><th>Dose</th><th>Concentration</th><th>Give</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var drug in EmergencyDrugs.All)
+                {
+                    var concentration = Concentration(drug);
+                    <tr>
+                        <td class="drug"><strong>@drug.Name</strong><span class="hint">@drug.Use</span></td>
+                        <td class="amount">@F(drug.Dose(kg)) @drug.Unit<span class="hint">@F(drug.DosePerKg) @drug.Unit/kg</span></td>
+                        <td class="concentration">
+                            <div class="number-input compact">
+                                <input type="text" inputmode="decimal" value="@ConcentrationText(drug)" aria-label="@drug.Name concentration"
+                                       @oninput="e => concentrations[drug.Name] = e.Value?.ToString() ?? string.Empty" />
+                                <span class="unit">@drug.Unit/mL</span>
+                            </div>
+                        </td>
+                        <td class="volume">@(concentration is { } c ? $"{F(drug.VolumeMl(kg, c))} mL" : "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <section class="result-card">
+        <h2>Defibrillation</h2>
+        <div class="segmented" role="radiogroup" aria-label="Defibrillator type">
+            <button type="button" role="radio" aria-checked="@(!biphasic ? "true" : "false")" class="@(!biphasic ? "selected" : "")" @onclick="() => biphasic = false">Monophasic</button>
+            <button type="button" role="radio" aria-checked="@(biphasic ? "true" : "false")" class="@(biphasic ? "selected" : "")" @onclick="() => biphasic = true">Biphasic</button>
+        </div>
+        <p class="big" id="defib">External: @F(exMin)-@F(exMax) J</p>
+        <p>Internal (open chest): @F(inMin)-@F(inMax) J</p>
+        <p class="hint">@(biphasic ? "2-4 J/kg external, 0.2-0.4 J/kg internal." : "4-6 J/kg external, 0.5-1 J/kg internal.") RECOVER suggests raising the energy by 50% for later shocks if the first fails.</p>
+    </section>
+
+    <p class="hint">
+        Source: RECOVER 2024 CPR drug dosing chart (recoverinitiative.org). Atropine is often 0.6 mg/mL in the UK; change the
+        concentration to match the vial. Esmolol is followed by a 50 µg/kg/min CRI: see the <a href="cri">CRI calculator</a>.
+    </p>
+}
+else
+{
+    <AwaitingInput>Enter the weight to see the doses.</AwaitingInput>
+}
+
+@code {
+    private readonly Dictionary<string, string> concentrations = [];
+    private bool biphasic = true;
+
+    private string ConcentrationText(EmergencyDrug drug) =>
+        concentrations.TryGetValue(drug.Name, out var text) ? text : F(drug.ConcentrationPerMl);
+
+    private double? Concentration(EmergencyDrug drug) =>
+        Parse(ConcentrationText(drug)) is > 0 and var c ? c : null;
+}

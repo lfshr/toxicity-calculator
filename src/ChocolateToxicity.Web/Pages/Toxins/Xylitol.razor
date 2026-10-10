@@ -1,0 +1,48 @@
+@page "/toxins/xylitol"
+@inherits ToxinPage<XylitolViewModel>
+@inject XylitolViewModel ViewModel
+
+<PageTitle>Xylitol - Vet Calculator</PageTitle>
+
+<PageHeader Title="Xylitol" Intro="Estimate the xylitol dose a dog has eaten, and whether to consider inducing emesis." />
+<DogOnlyNotice />
+
+<form class="calc-form" @onsubmit="() => Vm.CalculateCommand.ExecuteAsync(null)" @onsubmit:preventDefault>
+    <Field Label="Dog's weight" For="weight" Error="@Vm.DogWeightError">
+        <NumberInput Id="weight" Value="@Vm.DogWeightKg" ValueChanged="OnWeightChanged" Unit="kg" Placeholder="e.g. 12.5" Invalid="@(Vm.DogWeightError is not null)" />
+    </Field>
+
+    <fieldset class="field">
+        <legend>Xylitol eaten</legend>
+        <div class="segmented wide" role="radiogroup">
+            <button type="button" role="radio" aria-checked="@(!Vm.UseKnownAmount ? "true" : "false")"
+                    class="@(!Vm.UseKnownAmount ? "selected" : "")" @onclick="() => Vm.UseKnownAmount = false">From the label</button>
+            <button type="button" role="radio" aria-checked="@(Vm.UseKnownAmount ? "true" : "false")"
+                    class="@(Vm.UseKnownAmount ? "selected" : "")" @onclick="() => Vm.UseKnownAmount = true">Known amount</button>
+        </div>
+
+        @if (Vm.UseKnownAmount)
+        {
+            <Field Label="Xylitol eaten" For="xylitol" Error="@Vm.XylitolError"
+                   Hint="For gum, multiply the pieces eaten by the xylitol per piece; the manufacturer can usually say how much that is.">
+                <NumberInput Id="xylitol" Value="@Vm.XylitolEatenGrams" ValueChanged="v => Vm.XylitolEatenGrams = v" Unit="g" Placeholder="e.g. 1.5" Invalid="@(Vm.XylitolError is not null)" />
+            </Field>
+        }
+        else
+        {
+            <Field Label="Product eaten" For="product" Error="@Vm.ProductEatenError">
+                <NumberInput Id="product" Value="@Vm.ProductEatenGrams" ValueChanged="v => Vm.ProductEatenGrams = v" Unit="g" Placeholder="e.g. 20" Invalid="@(Vm.ProductEatenError is not null)" />
+            </Field>
+            <Field Label="Xylitol per 100 g (from the label)" For="per100" Error="@Vm.XylitolError"
+                   Hint="Pure xylitol sweetener is 100 g per 100 g. If the label only gives polyols, use that figure: treating all of it as xylitol errs towards treating.">
+                <NumberInput Id="per100" Value="@Vm.XylitolPer100g" ValueChanged="v => Vm.XylitolPer100g = v" Unit="g" Placeholder="e.g. 60" Invalid="@(Vm.XylitolError is not null)" />
+            </Field>
+        }
+    </fieldset>
+
+    <FormActions OnClear="ClearForm" />
+</form>
+
+@code {
+    protected override XylitolViewModel Vm => ViewModel;
+}

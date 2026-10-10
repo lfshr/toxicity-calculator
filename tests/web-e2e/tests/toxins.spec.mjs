@@ -1,0 +1,133 @@
+import { test, expect } from '@playwright/test';
+import { open, setPatient, stubOpenFoodFacts } from './helpers.mjs';
+
+test('home lists every calculator', async ({ page }) => {
+  await open(page);
+  for (const name of ['Chocolate', 'Grapes and raisins', 'Xylitol', 'Ibuprofen', 'Paracetamol', 'Rat and mouse bait',
+    'Emetics and charcoal', 'CPR drugs', 'Drug dose', 'Constant rate infusion', 'Fluid therapy', 'Blood transfusion',
+    'Body surface area and calories', 'Unit converter']) {
+    await expect(page.locator('.calc-card strong', { hasText: new RegExp(`^${name}$`) })).toBeVisible();
+  }
+});
+
+test('chocolate: Vets Now worked example needs emesis', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await page.locator('#weight').fill('10');
+  await page.locator('#type').selectOption('Milk');
+  await page.locator('#amount').fill('100');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
+  await expect(page.locator('#dose')).toHaveText('23 mg/kg');
+  await expect(page.getByText('100 g of milk chocolate eaten by a 10 kg dog.')).toBeVisible();
+});
+
+test('chocolate: below threshold is not an emesis case', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await page.locator('#weight').fill('30');
+  await page.locator('#type').selectOption('White');
+  await page.locator('#amount').fill('200');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('.verdict-title')).toHaveText('Emesis not indicated by dose');
+  await expect(page.locator('.verdict')).toHaveClass(/risk-low/);
+});
+
+test('chocolate: missing fields show errors', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.getByText("Enter the dog's weight in kg.")).toBeVisible();
+  await expect(page.getByText('Choose the type of chocolate.')).toBeVisible();
+  await expect(page.getByText('Enter the amount eaten in grams.')).toBeVisible();
+});
+
+test('chocolate: product search fills in cocoa and pack weight', async ({ page }) => {
+  await stubOpenFoodFacts(page);
+  await open(page, 'toxins/chocolate');
+  await page.locator('#weight').fill('8');
+  await page.getByRole('button', { name: 'Search products' }).click();
+
+  await page.getByLabel('Product name').fill('lindt 70');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  // The biscuits have no cocoa data, so only the two chocolates are listed.
+  await expect(page.locator('.result')).toHaveCount(2);
+  await page.locator('.result', { hasText: 'Excellence 70% Cacao' }).click();
+
+  await expect(page.locator('#cocoa')).toHaveValue('70');
+  await expect(page.getByText('Excellence 70% Cacao (Lindt): 70% cocoa, taken from the label data.')).toBeVisible();
+  await page.getByRole('button', { name: 'Use whole pack (100 g)' }).click();
+  await expect(page.locator('#amount')).toHaveValue('100');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('.verdict')).toHaveClass(/risk-critical/);
+});
+
+test('grapes: any amount is a treatment case', async ({ page }) => {
+  await open(page, 'toxins/grapes');
+  await page.locator('#weight').fill('20');
+  await page.locator('#form').selectOption('Dried');
+  await page.locator('#amount').fill('14');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
+  await expect(page.locator('#dose')).toHaveText('0.7 g/kg');
+});
+
+test('xylitol from a known amount', async ({ page }) => {
+  await open(page, 'toxins/xylitol');
+  await page.locator('#weight').fill('10');
+  await page.getByRole('radio', { name: 'Known amount' }).click();
+  await page.locator('#xylitol').fill('1.5');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('#dose')).toHaveText('150 mg/kg');
+  await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
+});
+
+test('ibuprofen and paracetamol keep separate forms', async ({ page }) => {
+  await open(page, 'toxins/ibuprofen');
+  await expect(page.locator('#strength')).toHaveValue('200');
+  await page.locator('#weight').fill('10');
+  await page.locator('#count').fill('2');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+  await expect(page.locator('#dose')).toHaveText('40 mg/kg');
+
+  await page.goto('toxins/paracetamol');
+  await expect(page.locator('h1')).toHaveText('Paracetamol');
+  await expect(page.locator('#strength')).toHaveValue('500');
+});
+
+test('rat bait fills in the usual concentration', async ({ page }) => {
+  await open(page, 'toxins/rat-bait');
+  await page.locator('#weight').fill('10');
+  await page.locator('#ingredient').selectOption('Brodifacoum');
+  await expect(page.locator('#concentration')).toHaveValue('0.005');
+  await page.locator('#bait').fill('50');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('#dose')).toHaveText('0.25 mg/kg');
+});
+
+test('the patient weight carries between calculators', async ({ page }) => {
+  await open(page);
+  await setPatient(page, '12');
+  await page.locator('.calc-card', { hasText: 'Chocolate' }).click();
+  await expect(page.locator('#weight')).toHaveValue('12');
+  await page.locator('#weight').fill('14');
+  await page.getByRole('link', { name: 'All calculators' }).click();
+  await page.locator('.calc-card', { hasText: 'Fluid therapy' }).click();
+  await expect(page.locator('#weight')).toHaveValue('14');
+  await expect(page.locator('.patient-lb')).toHaveText('30.9 lb');
+});
+
+test('cats get a warning on dog-only toxin thresholds', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await setPatient(page, '4', 'Cat');
+  await expect(page.getByText('These thresholds are for dogs.')).toBeVisible();
+});
+
+test('a result opened directly goes home', async ({ page }) => {
+  await open(page, 'result');
+  await expect(page).toHaveURL(/\/$/);
+});

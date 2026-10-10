@@ -1,0 +1,54 @@
+@page "/convert"
+@inherits PatientPage
+
+<PageTitle>Unit converter - Vet Calculator</PageTitle>
+
+<PageHeader Title="Unit converter" />
+
+<div class="convert-grid">
+    <section class="result-card">
+        <h2>Weight</h2>
+        <Field Label="Pounds" For="lb">
+            <NumberInput Id="lb" Value="@lbText" ValueChanged="OnLb" Unit="lb" />
+        </Field>
+        <Field Label="Kilograms" For="kg">
+            <NumberInput Id="kg" Value="@kgText" ValueChanged="OnKg" Unit="kg" />
+        </Field>
+        @if (Parse(kgText) is > 0 and <= 150)
+        {
+            <button type="button" class="secondary" @onclick="() => Patient.SetWeight(kgText)">Use as the patient's weight</button>
+        }
+    </section>
+
+    <section class="result-card">
+        <h2>Temperature</h2>
+        <Field Label="Fahrenheit" For="f">
+            <NumberInput Id="f" Value="@fText" ValueChanged="OnF" Unit="°F" />
+        </Field>
+        <Field Label="Celsius" For="c">
+            <NumberInput Id="c" Value="@cText" ValueChanged="OnC" Unit="°C" />
+        </Field>
+    </section>
+
+    <section class="result-card">
+        <h2>Solution strength</h2>
+        <Field Label="Percentage (w/v)" For="percent">
+            <NumberInput Id="percent" Value="@percentText" ValueChanged="OnPercent" Unit="%" />
+        </Field>
+        <Field Label="Concentration" For="mgml">
+            <NumberInput Id="mgml" Value="@mgMlText" ValueChanged="OnMgMl" Unit="mg/mL" />
+        </Field>
+        <p class="hint">A percentage is grams per 100 mL, so 1% = 10 mg/mL.</p>
+    </section>
+</div>
+
+@code {
+    private string lbText = "", kgText = "", fText = "", cText = "", percentText = "", mgMlText = "";
+
+    private void OnLb(string v) { lbText = v; kgText = Parse(v) is { } x ? F(UnitConversion.LbToKg(x)) : ""; }
+    private void OnKg(string v) { kgText = v; lbText = Parse(v) is { } x ? F(UnitConversion.KgToLb(x)) : ""; }
+    private void OnF(string v) { fText = v; cText = Parse(v) is { } x ? UnitConversion.FahrenheitToCelsius(x).ToString("0.#", CultureInfo.CurrentCulture) : ""; }
+    private void OnC(string v) { cText = v; fText = Parse(v) is { } x ? UnitConversion.CelsiusToFahrenheit(x).ToString("0.#", CultureInfo.CurrentCulture) : ""; }
+    private void OnPercent(string v) { percentText = v; mgMlText = Parse(v) is { } x ? F(UnitConversion.PercentToMgPerMl(x)) : ""; }
+    private void OnMgMl(string v) { mgMlText = v; percentText = Parse(v) is { } x ? F(UnitConversion.MgPerMlToPercent(x)) : ""; }
+}

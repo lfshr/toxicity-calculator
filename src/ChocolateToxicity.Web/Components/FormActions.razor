@@ -1,0 +1,9 @@
+<div class="actions">
+    <button type="submit" class="primary">@SubmitText</button>
+    <button type="button" class="secondary" @onclick="OnClear">Clear</button>
+</div>
+
+@code {
+    [Parameter] public string SubmitText { get; set; } = "Calculate";
+    [Parameter] public EventCallback OnClear { get; set; }
+}

@@ -1,0 +1,45 @@
+@page "/"
+
+<PageTitle>Vet Calculator</PageTitle>
+
+<h1 class="visually-hidden" tabindex="-1">Vet Calculator</h1>
+
+<section class="home-section">
+    <h2>Poisons</h2>
+    <p class="section-intro">Work out the dose eaten and whether to consider inducing emesis.</p>
+    <div class="card-grid">
+        @foreach (var toxin in ToxinOption.All)
+        {
+            <a class="calc-card" href="@WebNavigationService.PathFor(toxin.Kind)">
+                <strong>@toxin.Name</strong>
+                <span>@toxin.Detail</span>
+            </a>
+        }
+    </div>
+</section>
+
+<section class="home-section">
+    <h2>Decontamination and emergencies</h2>
+    <div class="card-grid">
+        <a class="calc-card" href="emesis"><strong>Emetics and charcoal</strong><span>Apomorphine, ropinirole (Clevor) and activated charcoal</span></a>
+        <a class="calc-card" href="emergency"><strong>CPR drugs</strong><span>RECOVER doses, volumes and defibrillation energy</span></a>
+    </div>
+</section>
+
+<section class="home-section">
+    <h2>Dosing and fluids</h2>
+    <div class="card-grid">
+        <a class="calc-card" href="dose"><strong>Drug dose</strong><span>mg/kg to mg, mL and tablets</span></a>
+        <a class="calc-card" href="cri"><strong>Constant rate infusion</strong><span>Syringe driver rate or drug to add to a bag</span></a>
+        <a class="calc-card" href="fluids"><strong>Fluid therapy</strong><span>Maintenance, dehydration deficit, losses and drip rate</span></a>
+        <a class="calc-card" href="transfusion"><strong>Blood transfusion</strong><span>Volume to reach a target PCV</span></a>
+    </div>
+</section>
+
+<section class="home-section">
+    <h2>Everyday tools</h2>
+    <div class="card-grid">
+        <a class="calc-card" href="bsa"><strong>Body surface area and calories</strong><span>BSA in m², RER and daily energy needs</span></a>
+        <a class="calc-card" href="convert"><strong>Unit converter</strong><span>lb and kg, °F and °C, % and mg/mL</span></a>
+    </div>
+</section>

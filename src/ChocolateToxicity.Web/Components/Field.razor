@@ -1,0 +1,21 @@
+@* A labelled form field with an optional hint and error message. *@
+<div class="field @(Error is null ? "" : "has-error")">
+    <label for="@For">@Label</label>
+    @ChildContent
+    @if (Hint is not null)
+    {
+        <p class="hint">@Hint</p>
+    }
+    @if (Error is not null)
+    {
+        <p class="error" role="alert">@Error</p>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string? For { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

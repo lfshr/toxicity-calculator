@@ -1,0 +1,22 @@
+@inherits LayoutComponentBase
+
+<header class="app-header">
+    <div class="header-inner">
+        <a class="brand" href="./">
+            <img src="icon.svg" alt="" width="32" height="32" />
+            <span>Vet Calculator</span>
+        </a>
+        <PatientBar />
+    </div>
+</header>
+
+<main class="content">
+    @Body
+</main>
+
+<footer class="app-footer">
+    <p>
+        A decision aid for veterinary professionals, not a substitute for clinical judgement. Check every dose
+        against the product's data sheet. <a href="about">Sources and methods</a>
+    </p>
+</footer>

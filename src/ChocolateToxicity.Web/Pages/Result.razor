@@ -1,0 +1,81 @@
+@page "/result"
+@inject WebNavigationService Navigation
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<PageTitle>Result - Vet Calculator</PageTitle>
+
+@if (result is not null)
+{
+    <PageHeader Title="Result" BackHref="@Navigation.ResultReturnPath" BackText="Back to calculator" />
+
+    <div class="verdict risk-@result.Risk.ToString().ToLowerInvariant()" role="status">
+        <strong class="verdict-title">@result.Verdict</strong>
+        <span>@result.VerdictDetail</span>
+    </div>
+
+    <div class="result-grid">
+        <div class="stat">
+            <span class="stat-label">Dose</span>
+            <span class="stat-value" id="dose">@result.Dose</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">@result.BandTitle</span>
+            <span>@result.ExpectedSigns</span>
+        </div>
+    </div>
+
+    <section class="result-section">
+        <h2>Based on</h2>
+        <p>@result.Summary</p>
+        <p class="hint">@result.Working</p>
+    </section>
+
+    @if (result.Advice is not null)
+    {
+        <section class="result-section">
+            <h2>Treatment notes</h2>
+            <p>@result.Advice</p>
+        </section>
+    }
+
+    <p class="hint">@result.ThresholdsText</p>
+
+    @if (result.EmesisIndicated)
+    {
+        <p class="notice info">
+            <a href="emesis">Work out emetic doses for this dog</a>, using the weight in the header.
+        </p>
+    }
+
+    <p class="hint">@result.Disclaimer</p>
+
+    <div class="actions">
+        <CopyButton Text="NotesText" />
+        <button type="button" class="secondary" @onclick="PrintAsync">Print</button>
+        <a class="button secondary" href="@Navigation.ResultReturnPath">Back to calculator</a>
+    </div>
+}
+
+@code {
+    private ResultViewModel? result;
+
+    protected override void OnInitialized()
+    {
+        result = Navigation.CurrentResult;
+        if (result is null)
+        {
+            // Opened directly or after a reload: there's nothing to show, so start again.
+            NavigationManager.NavigateTo("./");
+        }
+    }
+
+    private string NotesText() => string.Join(Environment.NewLine,
+        $"{result!.Verdict}. {result.VerdictDetail}",
+        $"Dose: {result.Dose}. {result.BandTitle}: {result.ExpectedSigns}",
+        result.Summary,
+        result.Working,
+        $"Calculated {DateTime.Now:d MMM yyyy HH:mm} with Vet Calculator.");
+
+    private async Task PrintAsync() => await JS.InvokeVoidAsync("print");
+}

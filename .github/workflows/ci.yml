@@ -16,6 +16,30 @@ jobs:
       - run: dotnet test tests/ChocolateToxicity.Core.Tests --configuration Release
       - run: dotnet test tests/ChocolateToxicity.ProductSearch.Tests --configuration Release
       - run: dotnet test tests/ChocolateToxicity.ViewModels.Tests --configuration Release
+      - run: dotnet test tests/ChocolateToxicity.Clinical.Tests --configuration Release
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: dotnet publish src/ChocolateToxicity.Web --configuration Release --output publish/web
+      - run: npm ci
+        working-directory: tests/web-e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests/web-e2e
+      - run: npx playwright test
+        working-directory: tests/web-e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: tests/web-e2e/test-results
 
   android:
     runs-on: ubuntu-latest

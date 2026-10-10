@@ -1,0 +1,64 @@
+@page "/about"
+
+<PageTitle>Sources and methods - Vet Calculator</PageTitle>
+
+<PageHeader Title="Sources and methods" Intro="Where every figure in the calculators comes from." />
+
+<section class="prose">
+    <h2>Chocolate</h2>
+    <p>
+        Dose (mg/kg) = theobromine and caffeine content (mg/g) x amount eaten (g) / weight (kg). Content by type is from the
+        <a href="https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals">Merck Veterinary Manual</a>,
+        taking the upper value of each range; from a cocoa percentage it is interpolated between 0% (0 mg/g), 30% (2.3), 45% (5.6) and 100% (15.5).
+        Signs are expected from 20 mg/kg, cardiotoxic effects from 40 mg/kg and seizures from 60 mg/kg (Merck; Vets Now).
+        Product search uses <a href="https://world.openfoodfacts.org">Open Food Facts</a>.
+    </p>
+
+    <h2>Other poisons</h2>
+    <p>
+        Grapes and raisins, xylitol, ibuprofen, paracetamol and rat bait thresholds come from the Merck Veterinary Manual,
+        the ASPCA Animal Poison Control Center and published case series; each result names its thresholds.
+    </p>
+
+    <h2>Emetics and charcoal</h2>
+    <p>
+        Apomorphine 0.1 mg/kg SC from the UK data sheet for Emedog 1 mg/ml (VMD); 0.03-0.04 mg/kg IV and activated charcoal 1-2 g/kg PO
+        from the Merck Veterinary Manual. Ropinirole drops from the Clevor data sheet's weight table
+        (<a href="https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF">VMD SPC</a>).
+    </p>
+
+    <h2>CPR drugs</h2>
+    <p>
+        Doses and defibrillation energies from the <a href="https://recoverinitiative.org">RECOVER 2024</a> drug dosing chart.
+    </p>
+
+    <h2>Fluids</h2>
+    <p>
+        Maintenance 132 x BW<sup>0.75</sup> mL/day for dogs and 80 x BW<sup>0.75</sup> for cats, from the
+        <a href="https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/">AAHA 2013 fluid therapy guidelines</a>.
+        Deficit = % dehydration x weight (kg) x 1000 mL. Drip rate = mL/hr x drops per mL / 60.
+    </p>
+
+    <h2>CRI</h2>
+    <p>
+        Undiluted: mL/hr = dose (mg/kg/hr) x weight / concentration. In fluids: mg to add = mg/hr x bag volume / fluid rate.
+    </p>
+
+    <h2>Transfusion</h2>
+    <p>
+        Volume = (target PCV - patient PCV) / donor PCV x blood volume x weight, with blood volume 80-90 mL/kg in dogs and
+        40-60 mL/kg in cats (<a href="https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats">Merck Veterinary Manual</a>).
+    </p>
+
+    <h2>Body surface area and energy</h2>
+    <p>
+        BSA (m²) = K x (weight in g)<sup>2/3</sup> x 10<sup>-4</sup>, K = 10.1 for dogs and 10.0 for cats (Merck Veterinary Manual).
+        RER = 70 x BW<sup>0.75</sup> kcal/day, with WSAVA life-stage multiples.
+    </p>
+
+    <h2>Disclaimer</h2>
+    <p>
+        This is a decision aid for qualified veterinary professionals, not a substitute for clinical judgement. Check every dose
+        against the product's data sheet and the patient in front of you.
+    </p>
+</section>
