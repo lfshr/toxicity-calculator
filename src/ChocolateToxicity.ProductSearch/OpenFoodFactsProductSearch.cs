@@ -23,10 +23,21 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
     private const string SearchUrl = "https://search.openfoodfacts.org/search";
     private const string LegacySearchUrl = "https://world.openfoodfacts.org/cgi/search.pl";
     private const string ProductUrl = "https://world.openfoodfacts.org/api/v2/product/";
-    private const string Fields = "code,product_name,brands,quantity,product_quantity,product_quantity_unit,nutriments,categories_tags";
-    private const int PageSize = 25;
+    private const string Fields =
+        "code,product_name,brands,quantity,product_quantity,product_quantity_unit,nutriments,categories_tags," +
+        "image_front_small_url,image_small_url";
 
+    // Results without known cocoa content are dropped, so ask for more than a screenful.
+    private const int PageSize = 50;
+
+    /// <summary>Finds products, keeping only those whose cocoa content is known.</summary>
     public async Task<IReadOnlyList<ChocolateProduct>> SearchAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var products = await SearchAllAsync(query, cancellationToken);
+        return products.Where(p => p.HasCocoaInfo).ToList();
+    }
+
+    private async Task<IReadOnlyList<ChocolateProduct>> SearchAllAsync(string query, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -164,7 +175,23 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
             PackWeightGrams: GetPackWeightGrams(product),
             CocoaPercent: cocoa,
             CocoaPercentSource: source,
-            SuggestedType: suggestedType);
+            SuggestedType: suggestedType,
+            ImageUrl: GetImageUrl(product));
+    }
+
+    private static string? GetImageUrl(JsonElement product)
+    {
+        foreach (var field in (string[])["image_front_small_url", "image_small_url"])
+        {
+            if (GetString(product, field) is { } url &&
+                Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+            {
+                return new UriBuilder(uri) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri.ToString();
+            }
+        }
+
+        return null;
     }
 
     private static ChocolateType? SuggestType(IReadOnlyCollection<string> categories)
@@ -182,6 +209,12 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient) : 
         if (categories.Contains("en:milk-chocolates"))
         {
             return ChocolateType.Milk;
+        }
+
+        // Dark bars range from about 45% upwards; strong dark (worked out at 70%) errs towards treating.
+        if (categories.Contains("en:dark-chocolates"))
+        {
+            return ChocolateType.StrongDark;
         }
 
         return null;

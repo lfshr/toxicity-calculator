@@ -42,7 +42,7 @@ public partial class ProductSearchViewModel(
 
             if (Results.Count == 0)
             {
-                Message = "No products found. Try the brand and product name, or go back and pick the chocolate type.";
+                Message = "No products with known cocoa content found. Try the brand and product name, or go back and pick the chocolate type.";
             }
         }
         catch (ProductSearchException ex)

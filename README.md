@@ -66,8 +66,11 @@ that fails, and the chosen product's full record is then fetched for its cocoa d
 1. The cocoa percentage recorded from the label (Open Food Facts' "cocoa" nutriment), if there is one.
 2. Otherwise a percentage in the product name, such as "Excellence 70% Cacao", but only when the name or category
    says it's dark chocolate or cocoa, so "30% less sugar" isn't read as cocoa.
-3. Otherwise the type its category implies (milk, white or cocoa powder).
-4. Otherwise it asks you to pick the chocolate type.
+3. Otherwise the type its category implies: milk, white, cocoa powder, or strong dark for a dark bar with no
+   percentage, which errs towards treating.
+
+Results whose cocoa content is unknown are left out of the list, and each result shows the product's photo when
+Open Food Facts has one.
 
 Cocoa powder and white chocolate always go by type: a percentage would understate defatted powder, and white
 chocolate's cocoa is cocoa butter, with almost no theobromine. When the product's pack weight is known, the app

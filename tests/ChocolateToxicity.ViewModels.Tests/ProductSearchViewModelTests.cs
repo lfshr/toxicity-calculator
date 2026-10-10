@@ -54,7 +54,7 @@ public class ProductSearchViewModelTests
         await _viewModel.SearchCommand.ExecuteAsync(null);
 
         Assert.Empty(_viewModel.Results);
-        Assert.StartsWith("No products found", _viewModel.Message);
+        Assert.StartsWith("No products with known cocoa content found", _viewModel.Message);
     }
 
     [Fact]

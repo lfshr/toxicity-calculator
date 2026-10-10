@@ -10,6 +10,8 @@ public sealed class ProductResult(ChocolateProduct product)
 
     public string Title => Product.DisplayName;
 
+    public string? ImageUrl => Product.ImageUrl;
+
     /// <summary>Pack size and what the app will use for the chocolate, such as "100 g · 70% cocoa".</summary>
     public string Detail
     {

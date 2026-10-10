@@ -19,6 +19,7 @@ public class OpenFoodFactsProductSearchTests
               "product_quantity": "100",
               "product_quantity_unit": "g",
               "nutriments": { "cocoa": 70, "cocoa_100g": 70, "energy-kcal_100g": 566 },
+              "image_front_small_url": "http://images.openfoodfacts.org/images/products/304/692/002/2606/front_en.200.jpg",
               "categories_tags": ["en:snacks", "en:chocolates", "en:dark-chocolates"]
             },
             {
@@ -76,6 +77,7 @@ public class OpenFoodFactsProductSearchTests
         Assert.Equal(70, lindt.CocoaPercent);
         Assert.Equal(CocoaPercentSource.LabelData, lindt.CocoaPercentSource);
         Assert.Equal("Excellence 70% Cacao (Lindt)", lindt.DisplayName);
+        Assert.Equal("https://images.openfoodfacts.org/images/products/304/692/002/2606/front_en.200.jpg", lindt.ImageUrl);
     }
 
     [Fact]
@@ -86,6 +88,17 @@ public class OpenFoodFactsProductSearchTests
         Assert.Equal(85, noir.CocoaPercent);
         Assert.Equal(CocoaPercentSource.ProductName, noir.CocoaPercentSource);
         Assert.Equal(100, noir.PackWeightGrams);
+    }
+
+    [Fact]
+    public void Dark_chocolate_without_a_percentage_is_treated_as_strong_dark()
+    {
+        var json = """{ "code": "9", "product_name": "Plain chocolate", "categories_tags": ["en:dark-chocolates"] }""";
+
+        var product = OpenFoodFactsProductSearch.ParseProduct(System.Text.Json.JsonDocument.Parse(json).RootElement);
+
+        Assert.Null(product?.CocoaPercent);
+        Assert.Equal(ChocolateType.StrongDark, product?.SuggestedType);
     }
 
     [Fact]
@@ -184,7 +197,9 @@ public class OpenFoodFactsProductSearchTests
 
         var products = await search.SearchAsync("lindt");
 
-        Assert.Equal(6, products.Count);
+        // The brownie has no known cocoa content, so it is left out.
+        Assert.Equal(5, products.Count);
+        Assert.All(products, p => Assert.True(p.HasCocoaInfo));
         Assert.Equal(["search.openfoodfacts.org", "world.openfoodfacts.org"], handler.Requests.Select(r => r.RequestUri!.Host));
         Assert.Contains("search_terms=lindt", handler.Requests[1].RequestUri!.Query);
     }
