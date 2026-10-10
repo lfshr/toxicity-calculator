@@ -28,6 +28,28 @@ dotnet build src/ChocolateToxicity.App -f net10.0-android -c Release -p:AndroidS
 
 The APK lands in `src/ChocolateToxicity.App/bin/Release/net10.0-android/`.
 
+### Signed release APK
+
+Release builds are signed with the release key when `ANDROID_SIGNING_KEYSTORE` (the keystore's path) and
+`ANDROID_SIGNING_PASSWORD` are set, and with the debug key otherwise:
+
+```
+ANDROID_SIGNING_KEYSTORE=/path/to/chocolatetoxicity.keystore ANDROID_SIGNING_PASSWORD=... \
+  dotnet publish src/ChocolateToxicity.App -f net10.0-android -c Release -p:AndroidSdkDirectory=<android sdk path>
+```
+
+The signed APK is `publish/com.lfshr.chocolatetoxicity-Signed.apk` in the output folder. Every update must be
+signed with the same key, or Android refuses to install it over the existing app, so keep the keystore and its
+password backed up and out of the repository.
+
+The "Release APK" GitHub Actions workflow builds the same APK when run by hand or on a `v*` tag, once the repository
+has two secrets: `ANDROID_KEYSTORE_BASE64` (the keystore, base64-encoded) and `ANDROID_KEYSTORE_PASSWORD`.
+
+### Installing on a device
+
+Copy the signed APK to the phone or tablet (email, USB or a shared drive), open it, and allow installs from that
+source when Android asks. To update, install the newer APK the same way; the app's data is kept.
+
 ## The app
 
 The calculator screen takes the dog's weight in kg, what was eaten (a chocolate type, or the cocoa percentage on the

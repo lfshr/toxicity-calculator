@@ -27,6 +27,28 @@
 		<SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<!--
+		Release builds are an APK, not an App Bundle, so they can be sideloaded. 32-bit ARM is included
+		so the APK also installs on older phones and tablets.
+	-->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<RuntimeIdentifiers>android-arm;android-arm64;android-x64</RuntimeIdentifiers>
+	</PropertyGroup>
+
+	<!--
+		Release signing. Set ANDROID_SIGNING_KEYSTORE to the keystore's path and ANDROID_SIGNING_PASSWORD to its
+		password; without them the build falls back to the debug key. Keep the keystore safe: Android only installs
+		an update over an existing install when it is signed with the same key.
+	-->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(ANDROID_SIGNING_KEYSTORE)' != ''">
+		<AndroidKeyStore>true</AndroidKeyStore>
+		<AndroidSigningKeyStore>$(ANDROID_SIGNING_KEYSTORE)</AndroidSigningKeyStore>
+		<AndroidSigningKeyAlias>chocolatetoxicity</AndroidSigningKeyAlias>
+		<AndroidSigningStorePass>env:ANDROID_SIGNING_PASSWORD</AndroidSigningStorePass>
+		<AndroidSigningKeyPass>env:ANDROID_SIGNING_PASSWORD</AndroidSigningKeyPass>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#5D3A1A" />

@@ -1,0 +1,48 @@
+name: Release APK
+
+# Builds a signed APK for sideloading. Needs two repository secrets:
+#   ANDROID_KEYSTORE_BASE64   the release keystore, base64-encoded
+#   ANDROID_KEYSTORE_PASSWORD its password
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: 21
+      - run: dotnet workload install maui-android
+      - run: >
+          dotnet build src/ChocolateToxicity.App -f net10.0-android
+          -t:InstallAndroidDependencies
+          -p:AndroidSdkDirectory="$ANDROID_HOME"
+          -p:AcceptAndroidSDKLicenses=true
+      - name: Restore signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::Add the ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD repository secrets first."
+            exit 1
+          fi
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+      - name: Build signed APK
+        env:
+          ANDROID_SIGNING_KEYSTORE: ${{ runner.temp }}/release.keystore
+          ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: >
+          dotnet publish src/ChocolateToxicity.App -f net10.0-android --configuration Release
+          -p:AndroidSdkDirectory="$ANDROID_HOME"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chocolate-toxicity-apk
+          path: src/ChocolateToxicity.App/bin/Release/net10.0-android/publish/*-Signed.apk
