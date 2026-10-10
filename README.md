@@ -4,14 +4,34 @@ A calculator for veterinary surgeons that estimates the methylxanthine (theobrom
 has eaten from chocolate, and whether inducing emesis should be considered. It is modelled on the
 [Vets Now chocolate toxicity calculator](https://www.vets-now.com/dog-chocolate-toxicity-calculator/).
 
-This repository currently holds the calculation core, a .NET class library that the Android (.NET MAUI) app will use.
-
 ## Layout
 
 - `src/ChocolateToxicity.Core`: the calculation library.
+- `src/ChocolateToxicity.ViewModels`: the screens' logic (input parsing, validation, result wording), kept free of UI types so it can be tested on any machine.
+- `src/ChocolateToxicity.App`: the .NET MAUI Android app.
 - `tests/ChocolateToxicity.Core.Tests`: xUnit tests, including the Vets Now worked examples.
+- `tests/ChocolateToxicity.ViewModels.Tests`: xUnit tests for the screens' logic.
 
-Run the tests with `dotnet test` (.NET 10 SDK).
+Run the tests with `dotnet test tests/ChocolateToxicity.Core.Tests` and `dotnet test tests/ChocolateToxicity.ViewModels.Tests` (.NET 10 SDK).
+
+### Building the Android app
+
+You need the .NET 10 SDK, the MAUI Android workload, a JDK (17 or later) and the Android SDK:
+
+```
+dotnet workload install maui-android
+dotnet build src/ChocolateToxicity.App -f net10.0-android -t:InstallAndroidDependencies -p:AndroidSdkDirectory=<android sdk path> -p:AcceptAndroidSDKLicenses=true
+dotnet build src/ChocolateToxicity.App -f net10.0-android -c Release -p:AndroidSdkDirectory=<android sdk path>
+```
+
+The APK lands in `src/ChocolateToxicity.App/bin/Release/net10.0-android/`.
+
+## The app
+
+The calculator screen takes the dog's weight in kg, what was eaten (a chocolate type, or the cocoa percentage on the
+label) and the amount eaten in grams. The result screen leads with the verdict (consider inducing emesis, or not
+indicated by dose), coloured by severity, then the dose in mg/kg, the expected signs, the working and a clinical
+disclaimer. Numbers can be typed with either a full stop or the device's decimal separator.
 
 ## How it calculates
 

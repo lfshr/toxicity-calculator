@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.ResultPage"
+             x:DataType="vm:ResultViewModel"
+             Title="Result">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Verdict -->
+            <Border BackgroundColor="{Binding Band, Converter={StaticResource SeverityColor}}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="20">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{Binding Verdict}"
+                           TextColor="White"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="24"
+                           AutomationId="VerdictLabel" />
+                    <Label Text="{Binding VerdictDetail}"
+                           TextColor="White"
+                           FontSize="15" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Dose and severity -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Dose" Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding Dose}"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="36"
+                       AutomationId="DoseLabel" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding BandTitle}" Style="{StaticResource FieldLabel}" />
+                <Label Text="{Binding ExpectedSigns}" FontSize="15" />
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+
+            <!-- What was entered and how the dose was worked out -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Based on" Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding Summary}" FontSize="15" />
+                <Label Text="{Binding Working}" Style="{StaticResource HintLabel}" />
+            </VerticalStackLayout>
+
+            <Label Text="Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg."
+                   Style="{StaticResource HintLabel}" />
+
+            <Label Text="{Binding Disclaimer}" Style="{StaticResource HintLabel}" />
+
+            <Button Text="Back to calculator"
+                    Clicked="OnBackClicked"
+                    HeightRequest="52" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

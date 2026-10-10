@@ -13,4 +13,27 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet test ChocolateToxicity.slnx --configuration Release
+      - run: dotnet test tests/ChocolateToxicity.Core.Tests --configuration Release
+      - run: dotnet test tests/ChocolateToxicity.ViewModels.Tests --configuration Release
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: 21
+      - run: dotnet workload install maui-android
+      # Installs any Android SDK platform or build tools the runner image is missing.
+      - run: >
+          dotnet build src/ChocolateToxicity.App -f net10.0-android
+          -t:InstallAndroidDependencies
+          -p:AndroidSdkDirectory="$ANDROID_HOME"
+          -p:AcceptAndroidSDKLicenses=true
+      - run: >
+          dotnet build src/ChocolateToxicity.App -f net10.0-android --configuration Release
+          -p:AndroidSdkDirectory="$ANDROID_HOME"

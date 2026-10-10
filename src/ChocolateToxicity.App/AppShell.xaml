@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="ChocolateToxicity.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:ChocolateToxicity.App.Pages"
+    Title="Chocolate Toxicity"
+    Shell.FlyoutBehavior="Disabled">
+
+    <ShellContent
+        Title="Chocolate toxicity"
+        ContentTemplate="{DataTemplate pages:CalculatorPage}"
+        Route="calculator" />
+
+</Shell>
