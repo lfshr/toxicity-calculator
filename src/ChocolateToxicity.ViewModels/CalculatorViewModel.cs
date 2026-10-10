@@ -114,16 +114,10 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
     [RelayCommand]
     private async Task CalculateAsync()
     {
-        var weight = ParseNumber(DogWeightKg);
-        DogWeightError = weight switch
-        {
-            null => "Enter the dog's weight in kg.",
-            <= 0 => "Weight must be more than 0 kg.",
-            > 150 => "Check the weight: it should be in kg.",
-            _ => null,
-        };
+        var weight = NumberInput.Parse(DogWeightKg);
+        DogWeightError = NumberInput.DogWeightError(weight);
 
-        var amount = ParseNumber(AmountEatenGrams);
+        var amount = NumberInput.Parse(AmountEatenGrams);
         AmountEatenError = amount switch
         {
             null => "Enter the amount eaten in grams.",
@@ -134,7 +128,7 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
         double? cocoa = null;
         if (UseCocoaPercent)
         {
-            cocoa = ParseNumber(CocoaPercent);
+            cocoa = NumberInput.Parse(CocoaPercent);
             ChocolateError = cocoa switch
             {
                 null => "Enter the cocoa percentage from the label.",
@@ -166,23 +160,5 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
         }
 
         await navigation.ShowResultAsync(new ResultViewModel(result, weight.Value, amount.Value, description));
-    }
-
-    // Accepts the device's decimal separator, and a full stop as well since many keypads only offer that.
-    private static double? ParseNumber(string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return null;
-        }
-
-        const NumberStyles style = NumberStyles.Float;
-        if (double.TryParse(text, style, CultureInfo.CurrentCulture, out var value) ||
-            double.TryParse(text, style, CultureInfo.InvariantCulture, out value))
-        {
-            return double.IsFinite(value) ? value : null;
-        }
-
-        return null;
     }
 }

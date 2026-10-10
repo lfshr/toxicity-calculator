@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChocolateToxicity.ViewModels;assembly=ChocolateToxicity.ViewModels"
+             x:Class="ChocolateToxicity.App.Pages.PainkillerPage"
+             x:DataType="vm:PainkillerViewModel"
+             HideSoftInputOnTapped="True"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="{Binding Intro}"
+                   Style="{StaticResource HintLabel}"
+                   FontSize="15" />
+
+            <!-- Dog's weight -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Dog's weight (kg)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding DogWeightKg}" Placeholder="e.g. 12.5" Keyboard="Numeric" ReturnType="Next" />
+                <Label Text="{Binding DogWeightError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding DogWeightError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- Strength -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Strength (mg per tablet)" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding StrengthMg}" Keyboard="Numeric" ReturnType="Next" />
+                <Label Text="{Binding StrengthHint}" Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding StrengthError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding StrengthError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <!-- Count -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Number eaten" Style="{StaticResource FieldLabel}" />
+                <Entry Text="{Binding Count}"
+                       Placeholder="e.g. 2"
+                       Keyboard="Numeric"
+                       ReturnType="Done"
+                       ReturnCommand="{Binding CalculateCommand}" />
+                <Label Text="If unsure, use the most that could be missing from the pack."
+                       Style="{StaticResource HintLabel}" />
+                <Label Text="{Binding CountError}"
+                       Style="{StaticResource ErrorLabel}"
+                       IsVisible="{Binding CountError, Converter={StaticResource HasText}}" />
+            </VerticalStackLayout>
+
+            <Button Text="Calculate" Command="{Binding CalculateCommand}" FontSize="18" HeightRequest="52" />
+            <Button Text="Clear" Command="{Binding ClearCommand}" Style="{StaticResource OutlineButton}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -10,6 +10,14 @@ internal sealed class FakeNavigation : INavigationService
 
     public int BackCount { get; private set; }
 
+    public ToxinKind? Calculator { get; private set; }
+
+    public Task ShowCalculatorAsync(ToxinKind kind)
+    {
+        Calculator = kind;
+        return Task.CompletedTask;
+    }
+
     public Task ShowResultAsync(ResultViewModel result)
     {
         Shown = result;
