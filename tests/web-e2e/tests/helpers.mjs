@@ -31,7 +31,12 @@ export async function open(page, path = '') {
   await page.locator('.app-header').waitFor();
 }
 
-export async function setPatient(page, weight, species = 'Dog') {
-  await page.getByRole('radio', { name: species, exact: true }).click();
-  await page.locator('#patient-weight').fill(weight);
+/** Sets the patient's species and weight with the fields at the top of the calculator.
+ * Pages whose doses don't depend on species (drug dose, CRI) have no species choice, so leave it out there.
+ */
+export async function setPatient(page, weight, species) {
+  if (species) {
+    await page.getByRole('radio', { name: species, exact: true }).click();
+  }
+  await page.locator('#weight').fill(weight);
 }

@@ -6,7 +6,7 @@ namespace ChocolateToxicity.Web.Components;
 
 /// <summary>
 /// A page backed by one of the shared view models. Re-renders when the view model changes (for example when a
-/// command sets an error message), and fills the dog's weight in from the patient header when the form's is blank.
+/// command sets an error message), and fills the dog's weight in from the shared patient when the form's is blank.
 /// </summary>
 public abstract class ViewModelPage<TViewModel> : ComponentBase, IDisposable
     where TViewModel : INotifyPropertyChanged
@@ -23,7 +23,7 @@ public abstract class ViewModelPage<TViewModel> : ComponentBase, IDisposable
         PullWeightFromPatient();
     }
 
-    /// <summary>Copies the patient's weight into the form when the form has none, or follows the header when it changes.</summary>
+    /// <summary>Copies the patient's weight into the form when the form has none, or follows the shared patient when it changes.</summary>
     protected virtual void PullWeightFromPatient()
     {
     }

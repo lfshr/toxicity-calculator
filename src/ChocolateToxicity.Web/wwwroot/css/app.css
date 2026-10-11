@@ -66,7 +66,7 @@ h1:focus { outline: none; }
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-/* Header and patient bar */
+/* Header */
 
 .app-header {
     background: #5d3a1a;
@@ -98,37 +98,6 @@ h1:focus { outline: none; }
 }
 
 .brand img { border-radius: 8px; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.45); }
-
-.patient-bar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
-    margin-left: auto;
-}
-
-.patient-weight {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.9rem;
-}
-
-.patient-weight .number-input { width: 7.5rem; }
-.patient-weight input { padding: 0.35rem 0.5rem; }
-.patient-lb { font-size: 0.9rem; opacity: 0.85; }
-
-.app-header .segmented button {
-    color: #fff;
-    border-color: rgb(255 255 255 / 0.5);
-}
-
-.app-header .segmented button.selected {
-    background: #fff;
-    color: #5d3a1a;
-}
-
-.app-header button.link { color: #fff; align-self: center; }
 
 /* Layout */
 
@@ -392,7 +361,6 @@ fieldset .notice { margin: 0; }
 
 @media (max-width: 600px) {
     h1 { font-size: 1.5rem; }
-    .patient-bar { margin-left: 0; width: 100%; }
     .result-grid { grid-template-columns: 1fr; }
     .actions > * { flex: 1; }
     /* The CPR table becomes one card per drug: name, then dose and volume, then the concentration. */

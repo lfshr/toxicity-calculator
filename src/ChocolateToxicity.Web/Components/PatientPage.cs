@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ChocolateToxicity.Web.Components;
 
-/// <summary>A calculator page that works from the patient in the header and re-renders when it changes.</summary>
+/// <summary>A calculator page that works from the shared patient and re-renders when it changes.</summary>
 public abstract class PatientPage : ComponentBase, IDisposable
 {
     [Inject]
