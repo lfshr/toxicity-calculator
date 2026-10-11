@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ChocolateToxicity.Core;
@@ -11,25 +12,39 @@ namespace ChocolateToxicity.ProductSearch;
 /// </summary>
 /// <remarks>
 /// Full-text search goes to Search-a-licious (https://search.openfoodfacts.org), the search service Open Food Facts
-/// recommends, and falls back to the older /cgi/search.pl endpoint if that fails. Open Food Facts limits search to
-/// 10 requests a minute per IP address, so search runs when the user asks rather than as they type. Search results
-/// may lack nutriment data, so the chosen product's full record is fetched from the product API (15 requests a
-/// minute). Requests must carry a User-Agent naming the app: https://openfoodfacts.github.io/openfoodfacts-server/api/
+/// recommends, and falls back to the older /cgi/search.pl endpoint if that fails. The older search is often busy
+/// and answers 503 (rate limiting included), so it is tried three times, a few seconds apart; if it still fails,
+/// products are looked up by brand through the /api/v2/search endpoint, which is tried twice. Open Food Facts limits search to 10 requests a minute per IP address, so search runs
+/// when the user asks rather than as they type. Search results may lack nutriment data, so the chosen product's
+/// full record is fetched from the product API (15 requests a minute). Requests must carry a User-Agent naming the
+/// app: https://openfoodfacts.github.io/openfoodfacts-server/api/
 /// </remarks>
 /// <param name="httpClient">The client to send requests with.</param>
 /// <param name="useSearchService">
 /// False to go straight to the older search. Search-a-licious sends no CORS headers, so a browser blocks it, while
 /// world.openfoodfacts.org allows requests from any site. Defaults to false when running in a browser.
 /// </param>
-public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bool? useSearchService = null) : IProductSearch
+/// <param name="retryDelay">
+/// How long to wait before trying a busy search again, doubling for a third try. Defaults to two seconds.
+/// </param>
+public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bool? useSearchService = null, TimeSpan? retryDelay = null)
+    : IProductSearch
 {
     private readonly bool _useSearchService = useSearchService ?? !OperatingSystem.IsBrowser();
+    private readonly TimeSpan _retryDelay = retryDelay ?? TimeSpan.FromSeconds(2);
 
     public const string UserAgent = "ChocolateToxicityCalculator/1.0 (https://github.com/lfshr/toxicity-calculator)";
 
     private const string SearchUrl = "https://search.openfoodfacts.org/search";
     private const string LegacySearchUrl = "https://world.openfoodfacts.org/cgi/search.pl";
     private const string ProductUrl = "https://world.openfoodfacts.org/api/v2/product/";
+    private const string TagSearchUrl = "https://world.openfoodfacts.org/api/v2/search";
+
+    // Limits search to chocolate, cocoa powder and other cocoa products, so "dairy milk" finds the chocolate bar
+    // rather than milk.
+    private const string CocoaCategory = "en:cocoa-and-its-products";
+    private const int LegacySearchAttempts = 3;
+    private const int BrandSearchAttempts = 2;
     private const string Fields =
         "code,product_name,brands,quantity,product_quantity,product_quantity_unit,nutriments,categories_tags," +
         "image_front_small_url,image_small_url";
@@ -65,10 +80,69 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
             }
         }
 
-        using var legacy = await GetJsonAsync(
-            $"{LegacySearchUrl}?search_terms={terms}&search_simple=1&action=process&json=1&page_size={PageSize}&fields={Fields}",
-            cancellationToken);
-        return ParseSearchResponse(legacy.RootElement);
+        var legacyUrl = $"{LegacySearchUrl}?search_terms={terms}&search_simple=1&action=process&json=1&page_size={PageSize}" +
+            $"&tagtype_0=categories&tag_contains_0=contains&tag_0={CocoaCategory}&fields={Fields}";
+        try
+        {
+            using var legacy = await GetJsonWithRetriesAsync(legacyUrl, LegacySearchAttempts, cancellationToken);
+            return ParseSearchResponse(legacy.RootElement);
+        }
+        catch (ProductSearchException ex) when (ex.IsTransient)
+        {
+            return await SearchByBrandAsync(query, ex, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Looks the query up as a brand ("Lindt 70" as the brand "lindt-70" or "lindt"), listing products whose name or
+    /// brand contains every word of the query first. Used when full-text search is unavailable.
+    /// </summary>
+    private async Task<IReadOnlyList<ChocolateProduct>> SearchByBrandAsync(
+        string query, ProductSearchException searchFailure, CancellationToken cancellationToken)
+    {
+        var words = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var brands = new[] { ToTag(query), ToTag(words[0]) }.Where(t => t.Length > 0).Distinct();
+
+        JsonDocument document;
+        try
+        {
+            document = await GetJsonWithRetriesAsync(
+                $"{TagSearchUrl}?brands_tags={Uri.EscapeDataString(string.Join('|', brands))}&categories_tags={CocoaCategory}" +
+                $"&sort_by=unique_scans_n&page_size={PageSize}&fields={Fields}",
+                BrandSearchAttempts,
+                cancellationToken);
+        }
+        catch (ProductSearchException)
+        {
+            throw searchFailure;
+        }
+
+        using (document)
+        {
+            var products = ParseSearchResponse(document.RootElement);
+            return products
+                .OrderBy(p => words.All(w => $"{p.Name} {p.Brand}".Contains(w, StringComparison.OrdinalIgnoreCase)) ? 0 : 1)
+                .ToList();
+        }
+    }
+
+    /// <summary>Turns text into an Open Food Facts tag: "Hershey's" becomes "hershey-s" and "Côte d'Or" "cote-d-or".</summary>
+    public static string ToTag(string text)
+    {
+        var builder = new StringBuilder();
+        foreach (var c in text.Normalize(NormalizationForm.FormD))
+        {
+            if (char.IsLetterOrDigit(c))
+            {
+                builder.Append(char.ToLowerInvariant(c));
+            }
+            else if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark && builder.Length > 0 && builder[^1] != '-')
+            {
+                builder.Append('-');
+            }
+        }
+
+        return builder.ToString().TrimEnd('-');
     }
 
     public async Task<ChocolateProduct?> GetProductAsync(string barcode, CancellationToken cancellationToken = default)
@@ -88,6 +162,22 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
         catch (ProductSearchException)
         {
             return null;
+        }
+    }
+
+    /// <summary>Gets JSON, trying again after a transient failure such as a busy server.</summary>
+    private async Task<JsonDocument> GetJsonWithRetriesAsync(string url, int attempts, CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await GetJsonAsync(url, cancellationToken);
+            }
+            catch (ProductSearchException ex) when (ex.IsTransient && attempt < attempts)
+            {
+                await Task.Delay(_retryDelay * attempt, cancellationToken);
+            }
         }
     }
 
@@ -111,7 +201,9 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new ProductSearchException($"Open Food Facts returned an error ({(int)response.StatusCode}). Try again shortly.");
+                throw new ProductSearchException(
+                    $"Open Food Facts returned an error ({(int)response.StatusCode}). Try again shortly.",
+                    isTransient: (int)response.StatusCode >= 500);
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -119,11 +211,15 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
         }
         catch (HttpRequestException ex)
         {
-            throw new ProductSearchException("Couldn't reach Open Food Facts. Check the internet connection.", ex);
+            // In a browser this is also how a busy server looks: its error page carries no CORS headers, so the
+            // browser hides the response and reports a failed request.
+            throw new ProductSearchException(
+                "Couldn't reach Open Food Facts. It may be busy, so try again in a minute, and check the internet connection.",
+                ex, isTransient: true);
         }
         catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new ProductSearchException("Open Food Facts took too long to answer. Try again.", ex);
+            throw new ProductSearchException("Open Food Facts took too long to answer. Try again.", ex, isTransient: true);
         }
         catch (JsonException ex)
         {

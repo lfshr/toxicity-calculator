@@ -193,7 +193,7 @@ public class OpenFoodFactsProductSearchTests
         var handler = new StubHandler(
             (HttpStatusCode.ServiceUnavailable, ""),
             (HttpStatusCode.OK, SearchResponse));
-        var search = new OpenFoodFactsProductSearch(new HttpClient(handler));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler), retryDelay: TimeSpan.Zero);
 
         var products = await search.SearchAsync("lindt");
 
@@ -216,7 +216,71 @@ public class OpenFoodFactsProductSearchTests
         var request = Assert.Single(handler.Requests);
         Assert.Equal("world.openfoodfacts.org", request.RequestUri!.Host);
         Assert.Contains("search_terms=lindt", request.RequestUri.Query);
+        // Only cocoa products, so "dairy milk" finds the chocolate rather than milk.
+        Assert.Contains("tag_0=en:cocoa-and-its-products", request.RequestUri.Query);
     }
+
+    [Fact]
+    public async Task Tries_the_older_search_again_when_it_is_busy()
+    {
+        var handler = new StubHandler(
+            (HttpStatusCode.ServiceUnavailable, "<html>"),
+            (HttpStatusCode.ServiceUnavailable, "<html>"),
+            (HttpStatusCode.OK, SearchResponse));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler), useSearchService: false, retryDelay: TimeSpan.Zero);
+
+        var products = await search.SearchAsync("lindt");
+
+        Assert.Equal(5, products.Count);
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(handler.Requests, r => Assert.Equal("/cgi/search.pl", r.RequestUri!.AbsolutePath));
+    }
+
+    [Fact]
+    public async Task Looks_the_query_up_as_a_brand_when_the_older_search_stays_busy()
+    {
+        const string brandResponse = """
+            { "count": 2, "products": [
+              { "code": "1", "product_name": "Buttons", "brands": "Cadbury, Dairy", "categories_tags": ["en:milk-chocolates"] },
+              { "code": "2", "product_name": "Dairy Milk", "brands": "Cadbury", "categories_tags": ["en:milk-chocolates"] } ] }
+            """;
+        var handler = new StubHandler(
+            (HttpStatusCode.ServiceUnavailable, "<html>"),
+            (HttpStatusCode.ServiceUnavailable, "<html>"),
+            (HttpStatusCode.ServiceUnavailable, "<html>"),
+            (HttpStatusCode.OK, brandResponse));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler), useSearchService: false, retryDelay: TimeSpan.Zero);
+
+        var products = await search.SearchAsync("Dairy Milk");
+
+        var request = handler.Requests[3].RequestUri!;
+        Assert.Equal("/api/v2/search", request.AbsolutePath);
+        Assert.Contains("brands_tags=dairy-milk%7Cdairy", request.Query);
+        Assert.Contains("categories_tags=en:cocoa-and-its-products", request.Query);
+        // The product named after every word of the query comes first.
+        Assert.Equal(["Dairy Milk", "Buttons"], products.Select(p => p.Name));
+    }
+
+    [Fact]
+    public async Task Reports_the_search_failure_when_brand_lookup_fails_too()
+    {
+        var handler = new StubHandler(new HttpRequestException("blocked"));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(handler), useSearchService: false, retryDelay: TimeSpan.Zero);
+
+        var ex = await Assert.ThrowsAsync<ProductSearchException>(() => search.SearchAsync("lindt"));
+
+        Assert.Contains("Couldn't reach Open Food Facts", ex.Message);
+        // Three tries of the full-text search, then two of the brand lookup.
+        Assert.Equal(5, handler.Requests.Count);
+    }
+
+    [Theory]
+    [InlineData("Lindt", "lindt")]
+    [InlineData("Dairy Milk", "dairy-milk")]
+    [InlineData("Hershey's", "hershey-s")]
+    [InlineData("Côte d'Or", "cote-d-or")]
+    [InlineData("Lindt 70%", "lindt-70")]
+    public void Makes_open_food_facts_tags(string text, string tag) => Assert.Equal(tag, OpenFoodFactsProductSearch.ToTag(text));
 
     [Fact]
     public async Task Gets_a_products_full_record()
@@ -258,7 +322,7 @@ public class OpenFoodFactsProductSearchTests
     [InlineData(HttpStatusCode.ServiceUnavailable, "returned an error (503)")]
     public async Task Http_errors_become_readable_messages(HttpStatusCode status, string expected)
     {
-        var search = new OpenFoodFactsProductSearch(new HttpClient(new StubHandler(status, "")));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(new StubHandler(status, "")), retryDelay: TimeSpan.Zero);
 
         var ex = await Assert.ThrowsAsync<ProductSearchException>(() => search.SearchAsync("lindt"));
 
@@ -268,7 +332,7 @@ public class OpenFoodFactsProductSearchTests
     [Fact]
     public async Task Network_failure_becomes_a_readable_message()
     {
-        var search = new OpenFoodFactsProductSearch(new HttpClient(new StubHandler(new HttpRequestException("no network"))));
+        var search = new OpenFoodFactsProductSearch(new HttpClient(new StubHandler(new HttpRequestException("no network"))), retryDelay: TimeSpan.Zero);
 
         var ex = await Assert.ThrowsAsync<ProductSearchException>(() => search.SearchAsync("lindt"));
 
