@@ -12,7 +12,9 @@ public class ToxinTests
     }
 
     [Theory]
-    [InlineData(99, false, RiskLevel.Low)]
+    [InlineData(49, false, RiskLevel.Low)]
+    [InlineData(50, true, RiskLevel.Moderate)] // VPIS and Tox Info Suisse treat from 50 mg/kg.
+    [InlineData(99, true, RiskLevel.Moderate)]
     [InlineData(100, true, RiskLevel.High)]
     [InlineData(499, true, RiskLevel.High)]
     [InlineData(500, true, RiskLevel.Critical)]
@@ -77,14 +79,17 @@ public class ToxinTests
     }
 
     [Fact]
-    public void Bromadiolone_decontaminates_from_merolas_threshold()
+    public void Bromadiolone_uses_moormans_lowest_dog_ld50()
     {
+        // Moorman 2002 gives a dog LD50 of 0.5-15 mg/kg, below Merola's 11 mg/kg, so the toxic dose is 0.05 mg/kg.
         var profile = Rodenticides.ProfileFor(RodenticideIngredient.Bromadiolone);
 
-        Assert.Equal(new[] { 0.02, 1.1, 11 }, profile.Bands.Select(b => b.FromDose).ToArray());
+        Assert.Equal(new[] { 0.02, 0.05, 0.5 }, profile.Bands.Select(b => b.FromDose).ToArray());
         Assert.Equal(0.02, profile.EmesisFromDose, 9);
-        Assert.Equal(RiskLevel.Moderate, profile.Assess(0.5).Band.Risk);
-        Assert.Equal(RiskLevel.High, profile.Assess(1.1).Band.Risk);
+        Assert.Equal(RiskLevel.Moderate, profile.Assess(0.03).Band.Risk);
+
+        // The review's example: 100 g of 0.005% bait in a 10 kg dog is 0.5 mg/kg, potentially lethal, not "monitor".
+        Assert.Equal(RiskLevel.Critical, Rodenticides.Assess(RodenticideIngredient.Bromadiolone, Rodenticides.ActiveMgEaten(100, 0.005), 10).Band.Risk);
     }
 
     [Fact]

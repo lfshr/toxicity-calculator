@@ -3,23 +3,36 @@
 
 <PageTitle>Emetics and charcoal - Vet Calculator</PageTitle>
 
-<PageHeader Title="Emetics and charcoal" Intro="Doses for inducing emesis in dogs and for a single dose of activated charcoal." />
-
-@if (Species == Species.Cat)
-{
-    <div class="notice warning" role="note">
-        <strong>These emetics are licensed for dogs only.</strong> Apomorphine and ropinirole are unreliable in cats;
-        alpha-2 agonists are usually used instead. Switch the patient to Dog for these doses.
-    </div>
-}
+<PageHeader Title="Emetics and charcoal" Intro="Doses for inducing emesis in dogs and cats, and for a single dose of activated charcoal." />
 
 <div class="calc-form">
     <SpeciesField />
     <PatientWeightField />
 </div>
 
-@if (WeightKg is { } kg)
+@if (WeightKg is { } catKg && Species == Species.Cat)
 {
+    var imMin = catKg * Emetics.CatDexmedetomidineImMinMicrogramsPerKg;
+    var imMax = catKg * Emetics.CatDexmedetomidineImMaxMicrogramsPerKg;
+    var iv = catKg * Emetics.CatDexmedetomidineIvMicrogramsPerKg;
+
+    <p class="hint">Apomorphine and ropinirole are licensed for dogs only and unreliable in cats, so cats are given an alpha-2 agonist.</p>
+
+    <section class="result-card">
+        <h2>Dexmedetomidine, intramuscular</h2>
+        <p class="big" id="dexmedetomidine-im">@F(imMin)-@F(imMax) µg = @F(imMin / Emetics.DexmedetomidineMicrogramsPerMl)-@F(imMax / Emetics.DexmedetomidineMicrogramsPerMl) mL</p>
+        <p class="hint">7-40 µg/kg IM (Merck Veterinary Manual), of a 0.5 mg/mL solution (Dexdomitor; check the vial).</p>
+    </section>
+
+    <section class="result-card">
+        <h2>Dexmedetomidine, intravenous</h2>
+        <p class="big" id="dexmedetomidine-iv">@F(iv) µg = @F(iv / Emetics.DexmedetomidineMicrogramsPerMl) mL</p>
+        <p class="hint">3.5 µg/kg IV (Merck Veterinary Manual), of a 0.5 mg/mL solution.</p>
+    </section>
+}
+else if (WeightKg is { } dogKg)
+{
+    var kg = dogKg;
     var sc = kg * Emetics.ApomorphineSubcutaneousMgPerKg;
     var ivMin = kg * Emetics.ApomorphineIntravenousMinMgPerKg;
     var ivMax = kg * Emetics.ApomorphineIntravenousMaxMgPerKg;
@@ -54,22 +67,32 @@
         }
     </section>
 
+}
+
+@if (WeightKg is { } weight)
+{
     <section class="result-card">
         <h2>Activated charcoal</h2>
-        <p class="big" id="charcoal">@F(kg * Emetics.CharcoalMinGramsPerKg)-@F(kg * Emetics.CharcoalMaxGramsPerKg) g</p>
+        <p class="big" id="charcoal">@F(weight * Emetics.CharcoalMinGramsPerKg)-@F(weight * Emetics.CharcoalMaxGramsPerKg) g</p>
         <p class="hint">
             1-2 g/kg PO, once (Merck Veterinary Manual). For chocolate, Merck advises charcoal only for potentially lethal
             exposures; for cholecalciferol bait it is part of routine decontamination; xylitol is not bound by charcoal. For the volume, divide by the product's strength:
-            a 200 mg/mL (20%) suspension would be @F(kg * Emetics.CharcoalMinGramsPerKg * 5)-@F(kg * Emetics.CharcoalMaxGramsPerKg * 5) mL.
+            a 200 mg/mL (20%) suspension would be @F(weight * Emetics.CharcoalMinGramsPerKg * 5)-@F(weight * Emetics.CharcoalMaxGramsPerKg * 5) mL.
             Don't give to a patient that can't protect its airway.
         </p>
     </section>
 
     <p class="hint">
-        How long emesis is worthwhile depends on the toxin: about 2 hours for chocolate and up to 4 hours for anticoagulant
-        and cholecalciferol baits (Merck). Only induce emesis in a
-        patient that is clinically normal. Don't induce emesis in a
-        patient that is seizing, sedated, has a reduced gag reflex, or has eaten something corrosive or sharp.
+        How long emesis is worthwhile depends on the toxin. For chocolate it can be worthwhile up to about 6 hours after
+        ingestion in a stable patient, and later still, because its fat delays gastric emptying (Animal Emergency
+        Australia chocolate protocol; Merck's "within 2 hours" is an example of a recent exposure, not a cut-off). For
+        anticoagulant and cholecalciferol baits, up to 4 hours (Merck). Only induce emesis in a patient that is clinically normal.
+    </p>
+    <p class="hint" id="emesis-contraindications">
+        Don't induce emesis in a patient that is seizing, sedated or has CNS depression, is hypoxic or dyspnoeic, weak,
+        ataxic or comatose, in shock or circulatory failure, or has a reduced gag reflex; or after ingestion of corrosives,
+        sharp objects, volatile substances or organic solvents (such as hydrocarbons), or foaming products. Don't give
+        apomorphine after a dopamine antagonist (neuroleptic) such as acepromazine. (Emedog and Clevor data sheets.)
     </p>
 }
 else

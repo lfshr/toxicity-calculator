@@ -5,8 +5,9 @@ namespace ChocolateToxicity.Core;
 /// </summary>
 /// <remarks>
 /// Merck Veterinary Manual: mild signs at 20 mg/kg, cardiotoxic effects at 40-50 mg/kg, seizures at 60 mg/kg or more.
-/// Vets Now gives the same figures: toxic effects at 20 mg/kg, severe signs at 40-50 mg/kg and seizures at 60 mg/kg
-/// (https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate).
+/// The primary source gives the same figures: Gwaltney-Brant, "Chocolate intoxication", Veterinary Medicine, February 2001
+/// (https://www.aspcapro.org/sites/default/files/m-toxbrief_0201.pdf). Vets Now is the design reference for the
+/// calculator, not a source for the thresholds.
 /// </remarks>
 public static class ToxicityThresholds
 {

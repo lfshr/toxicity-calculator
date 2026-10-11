@@ -85,8 +85,8 @@ public class ToxinFormTests
 
         var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
         Assert.Equal("50 mg/kg", shown.Dose);
-        Assert.False(shown.EmesisIndicated);
-        Assert.Equal("The dose is below the 100 mg/kg threshold for treatment.", shown.VerdictDetail);
+        Assert.True(shown.EmesisIndicated);
+        Assert.Equal("The dose is at or above the 50 mg/kg threshold for treatment.", shown.VerdictDetail);
     }
 
     [Fact]
@@ -159,14 +159,15 @@ public class ToxinFormTests
         Assert.Equal("25 g x 0.005% = 1.25 mg bromadiolone, divided by 10 kg.", shown.Working);
         Assert.Equal("Consider inducing emesis", shown.Verdict);
         Assert.Equal("The dose is at or above the 0.02 mg/kg threshold for treatment.", shown.VerdictDetail);
-        Assert.Equal("Decontaminate and monitor", shown.BandTitle);
+        Assert.Equal("Toxic dose", shown.BandTitle);
     }
 
     [Theory]
-    [InlineData(false, "Decontaminate and monitor")] // 0.625 mg/kg is below the dog toxic dose of 2 mg/kg.
-    [InlineData(true, "Toxic dose")] // ...but above the cat toxic dose of 0.5 mg/kg.
-    public async Task Rat_bait_uses_the_cat_thresholds_for_a_cat(bool cat, string band)
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Warfarin_is_toxic_from_half_a_mg_per_kg_in_dogs_and_cats(bool cat)
     {
+        // 10 g of 0.025% bait in a 4 kg animal is 0.625 mg/kg, above one-tenth of the 5 mg/kg LD50 (Moorman 2002).
         var form = new RatBaitViewModel(_navigation)
         {
             PatientIsCat = cat,
@@ -179,7 +180,44 @@ public class ToxinFormTests
 
         var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
         Assert.Equal("0.625 mg/kg", shown.Dose);
-        Assert.Equal(band, shown.BandTitle);
+        Assert.Equal("Toxic dose", shown.BandTitle);
+    }
+
+    [Fact]
+    public async Task Rat_bait_refuses_a_cat_for_an_ingredient_without_cat_thresholds()
+    {
+        var form = new RatBaitViewModel(_navigation)
+        {
+            PatientIsCat = true,
+            DogWeightKg = "4",
+            SelectedIngredient = RodenticideOption.For(RodenticideIngredient.Brodifacoum),
+            BaitEatenGrams = "10",
+        };
+
+        await form.CalculateCommand.ExecuteAsync(null);
+
+        Assert.Null(_navigation.Shown);
+        Assert.Equal("There are no published cat thresholds for brodifacoum.", form.IngredientError);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Chocolate_by_cocoa_percent_says_the_content_is_an_estimate(bool byPercent)
+    {
+        var form = new CalculatorViewModel(_navigation, new FakeProductSearch())
+        {
+            DogWeightKg = "10",
+            UseCocoaPercent = byPercent,
+            CocoaPercent = "70",
+            SelectedChocolateType = ChocolateTypeOption.For(Core.ChocolateType.Milk),
+            AmountEatenGrams = "50",
+        };
+
+        await form.CalculateCommand.ExecuteAsync(null);
+
+        var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
+        Assert.Equal(byPercent, shown.Working.Contains("an estimate from the cocoa %", StringComparison.Ordinal));
     }
 
     [Fact]

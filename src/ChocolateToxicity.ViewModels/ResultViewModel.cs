@@ -8,7 +8,9 @@ public sealed class ResultViewModel
 {
     /// <summary>A chocolate result.</summary>
     /// <param name="patientNoun">"dog" or "cat", for the summary.</param>
-    public ResultViewModel(ToxicityResult result, double dogWeightKg, double amountEatenGrams, string chocolateDescription, string patientNoun = "dog")
+    /// <param name="fromCocoaPercent">True when the content was estimated from a cocoa percentage rather than a type.</param>
+    public ResultViewModel(
+        ToxicityResult result, double dogWeightKg, double amountEatenGrams, string chocolateDescription, string patientNoun = "dog", bool fromCocoaPercent = false)
     {
         Result = result;
         Band = result.Band;
@@ -25,8 +27,13 @@ public sealed class ResultViewModel
         Working =
             $"{NumberInput.FormatPrecise(result.MethylxanthineMgPerGram)} mg/g x {Format(amountEatenGrams)} g = " +
             $"{NumberInput.FormatPrecise(result.TotalMethylxanthineMg)} mg " +
-            $"theobromine and caffeine, divided by {Format(dogWeightKg)} kg.";
-        ThresholdsText = "Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg, potentially lethal from 100 mg/kg (Merck).";
+            $"theobromine and caffeine, divided by {Format(dogWeightKg)} kg." +
+            (fromCocoaPercent
+                ? " The mg/g is an estimate from the cocoa %, interpolated between Merck's figures for milk, semisweet and " +
+                  "baking chocolate, not a measured value."
+                : "");
+        ThresholdsText = "Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg, " +
+            "potentially lethal from 100 mg/kg (Merck; Gwaltney-Brant 2001).";
         Disclaimer = ClinicalText.Disclaimer;
     }
 

@@ -93,6 +93,18 @@ test('xylitol from a known amount', async ({ page }) => {
   await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
 });
 
+test('xylitol is treated from 50 mg/kg', async ({ page }) => {
+  await open(page, 'toxins/xylitol');
+  await page.locator('#weight').fill('10');
+  await page.getByRole('radio', { name: 'Known amount' }).click();
+  await page.locator('#xylitol').fill('0.6');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.locator('#dose')).toHaveText('60 mg/kg');
+  await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
+  await expect(page.getByText(/treat from 50 mg\/kg \(VPIS; Tox Info Suisse\)/)).toBeVisible();
+});
+
 test('ibuprofen and paracetamol keep separate forms', async ({ page }) => {
   await open(page, 'toxins/ibuprofen');
   await expect(page.locator('#strength')).toHaveValue('200');
@@ -167,14 +179,15 @@ test('rat bait in a cat only offers ingredients with cat thresholds', async ({ p
   await expect(page.locator('#ingredient option', { hasText: 'Brodifacoum (dogs only)' })).toBeDisabled();
   await expect(page.locator('#ingredient option', { hasText: 'Cholecalciferol' })).toBeDisabled();
   await page.locator('#ingredient').selectOption('Warfarin');
-  await expect(page.getByText(/Cat thresholds for warfarin/)).toBeVisible();
+  await expect(page.getByText(/Thresholds for warfarin use the lower of the dog/)).toBeVisible();
   await page.locator('#bait').fill('10');
   await page.getByRole('button', { name: 'Calculate' }).click();
 
-  // 10 g of 0.025% warfarin in a 4 kg cat is 0.625 mg/kg: toxic in a cat (from 0.5), not yet in a dog (from 2).
+  // 10 g of 0.025% warfarin in a 4 kg cat is 0.625 mg/kg: toxic from 0.5 (one-tenth of the 5 mg/kg LD50).
   await expect(page.locator('#dose')).toHaveText('0.625 mg/kg');
   await expect(page.getByText('Toxic dose', { exact: true })).toBeVisible();
-  await expect(page.getByText(/lowest cat LD50 5 mg\/kg/)).toBeVisible();
+  await expect(page.getByText(/lower of the dog and cat LD50s, 5 mg\/kg/)).toBeVisible();
+  await expect(page.getByText(/for 2 weeks, which Merck says is typically enough for warfarin/)).toBeVisible();
 });
 
 test('rat bait greys out Cat for an ingredient with no cat thresholds', async ({ page }) => {

@@ -10,6 +10,30 @@ test('emetics for a 20 kg dog', async ({ page }) => {
   await expect(page.locator('#charcoal')).toHaveText('20-40 g');
 });
 
+test('emesis is worthwhile for longer after chocolate, with the full contraindications', async ({ page }) => {
+  await open(page, 'emesis');
+  await setPatient(page, '20');
+  await expect(page.getByText(/up to about 6 hours/)).toBeVisible();
+  await expect(page.locator('#emesis-contraindications')).toContainText('hypoxic or dyspnoeic');
+  await expect(page.locator('#emesis-contraindications')).toContainText('dopamine antagonist');
+});
+
+test('emetics for a 4 kg cat use dexmedetomidine', async ({ page }) => {
+  await open(page, 'emesis');
+  await setPatient(page, '4', 'Cat');
+  await expect(page.locator('#dexmedetomidine-im')).toHaveText('28-160 µg = 0.056-0.32 mL');
+  await expect(page.locator('#dexmedetomidine-iv')).toHaveText('14 µg = 0.028 mL');
+  await expect(page.locator('#apomorphine-sc')).toHaveCount(0);
+  await expect(page.locator('#charcoal')).toHaveText('4-8 g');
+});
+
+test('CPR vasopressors follow RECOVER 2024', async ({ page }) => {
+  await open(page, 'emergency');
+  await setPatient(page, '10');
+  await expect(page.getByText(/Refractory VF or pulseless VT: preferred first-line vasopressor/)).toBeVisible();
+  await expect(page.getByText(/Shockable rhythms: only once refractory/)).toBeVisible();
+});
+
 test('Clevor has no dose under 1.8 kg', async ({ page }) => {
   await open(page, 'emesis');
   await setPatient(page, '1.5');
