@@ -461,3 +461,17 @@ fieldset .notice { margin: 0; }
     z-index: 1000;
 }
 #blazor-error-ui .dismiss { cursor: pointer; position: absolute; right: 0.75rem; top: 0.5rem; }
+
+#update-ui {
+    background: #5d3a1a;
+    bottom: 0;
+    box-sizing: border-box;
+    color: #fff;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1001;
+}
+#update-ui[hidden] { display: none; }
+#update-ui .reload { background: #fff; border: 0; border-radius: 4px; color: #5d3a1a; cursor: pointer; font: inherit; font-weight: bold; margin-left: 0.5rem; padding: 0.2rem 0.75rem; }

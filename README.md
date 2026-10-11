@@ -45,7 +45,9 @@ The tests answer Open Food Facts requests from fixtures in `tests/web-e2e/fixtur
 The "Deploy web app" GitHub Actions workflow publishes the app to GitHub Pages on every push to `main`, once Pages
 is turned on (Settings > Pages > Source: GitHub Actions). The app is a static site, so any static host works:
 serve `publish/web/wwwroot`, sending `index.html` for unknown paths. It can be installed to a phone's home screen
-and works offline after the first visit.
+and works offline after the first visit. When online, the page always comes from the server, so a new deploy shows on the next normal
+reload; the offline copy is only used without a connection. If a deploy lands while the app is open, a bar offers a
+reload. `tests/web-e2e/tests/update.spec.mjs` checks this by deploying one build and then another.
 
 ### Building the Android app
 

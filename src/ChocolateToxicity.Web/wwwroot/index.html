@@ -36,7 +36,25 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
+    <div id="update-ui" role="status" hidden>
+        A new version of Vet Calculator is ready.
+        <button type="button" class="reload" onclick="location.reload()">Reload</button>
+    </div>
+    <script>
+        // A new deploy installs a new service worker, which takes over at once. When it replaces the one that loaded
+        // this page, offer a reload so the page and its code match the new version.
+        if ('serviceWorker' in navigator) {
+            const hadController = !!navigator.serviceWorker.controller;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (hadController) {
+                    document.getElementById('update-ui').hidden = false;
+                }
+            });
+            navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' })
+                .then(registration => registration.update())
+                .catch(error => console.warn('Service worker registration failed', error));
+        }
+    </script>
 </body>
 
 </html>
