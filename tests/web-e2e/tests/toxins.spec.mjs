@@ -117,16 +117,27 @@ test('rat bait fills in the usual concentration', async ({ page }) => {
   await expect(page.locator('#dose')).toHaveText('0.25 mg/kg');
 });
 
-test('the patient weight carries between calculators', async ({ page }) => {
-  await open(page);
-  await setPatient(page, '12');
-  await page.locator('.calc-card', { hasText: 'Chocolate' }).click();
-  await expect(page.locator('#weight')).toHaveValue('12');
-  await page.locator('#weight').fill('14');
+test('the patient weight and species carry between calculators', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await setPatient(page, '12', 'Cat');
   await page.getByRole('link', { name: 'All calculators' }).click();
   await page.locator('.calc-card', { hasText: 'Fluid therapy' }).click();
+  await expect(page.locator('#weight')).toHaveValue('12');
+  await expect(page.getByRole('radio', { name: 'Cat', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await page.locator('#weight').fill('14');
+  await expect(page.getByText('30.9 lb. Shared with the other calculators.')).toBeVisible();
+  await page.getByRole('link', { name: 'All calculators' }).click();
+  await page.locator('.calc-card', { hasText: 'Chocolate' }).click();
   await expect(page.locator('#weight')).toHaveValue('14');
-  await expect(page.locator('.patient-lb')).toHaveText('30.9 lb');
+  await expect(page.getByText("Cat's weight")).toBeVisible();
+});
+
+test('the header has no patient fields', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await setPatient(page, '4', 'Cat');
+  await expect(page.locator('.app-header input')).toHaveCount(0);
+  await expect(page.locator('.app-header [role="radio"]')).toHaveCount(0);
+  await expect(page.getByText('New patient')).toHaveCount(0);
 });
 
 test('cats get a warning on dog-only toxin thresholds', async ({ page }) => {

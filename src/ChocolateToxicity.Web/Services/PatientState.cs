@@ -3,7 +3,7 @@ using ChocolateToxicity.Clinical;
 namespace ChocolateToxicity.Web.Services;
 
 /// <summary>
-/// The patient being worked on: species and weight, entered once in the header and filled into every calculator.
+/// The patient being worked on: species and weight, entered once and filled into every calculator.
 /// </summary>
 public sealed class PatientState
 {

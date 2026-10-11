@@ -226,7 +226,7 @@ above 0.5 mg/kg.
 
 ## Clinical calculators (web app)
 
-The patient's species and weight are entered once in the header and used by every calculator.
+The patient's species and weight are entered at the top of each calculator and carried to the others.
 
 | Calculator | Formula | Source |
 |---|---|---|

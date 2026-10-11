@@ -1,13 +1,17 @@
-@* The patient's weight, shared with the header and every other calculator. *@
+@* The patient's weight, shared with every other calculator. *@
 @inject PatientState Patient
 @implements IDisposable
 
 <Field Label="@($"{(Patient.Species == Species.Cat ? "Cat" : "Dog")}'s weight")" For="weight" Error="@Error"
-       Hint="Shared with the header and the other calculators.">
+       Hint="@Hint">
     <NumberInput Id="weight" Value="@Patient.WeightText" ValueChanged="Patient.SetWeight" Unit="kg" Placeholder="e.g. 12.5" Invalid="@(Error is not null)" />
 </Field>
 
 @code {
+    private string Hint => Patient.WeightKg is { } kg
+        ? $"{Numbers.Format(UnitConversion.KgToLb(kg))} lb. Shared with the other calculators."
+        : "Shared with the other calculators.";
+
     private string? Error => Patient.WeightText.Length > 0 && Patient.WeightKg is null
         ? "Enter a weight above 0 and up to 150 kg."
         : null;
