@@ -6,7 +6,27 @@
 
 <PageHeader Title="Rat and mouse bait"
             Intro="Estimate the dose of a bait's active ingredient, and whether to consider inducing emesis. The ingredient and its concentration are on the pack." />
-<DogOnlyNotice />
+<DogOnlyNotice>
+    @switch (Vm.SelectedIngredient?.Info)
+    {
+        case { LowestCatLd50MgPerKg: { } catLd50 } info:
+            <strong>Cat thresholds used for @info.Name.</strong>
+            @($" Toxic from one-tenth of the cat LD50 of {catLd50} mg/kg (Merola 2002 and Moorman 2002 agree; Merck's one-tenth rule).")
+            break;
+        case { Ingredient: RodenticideIngredient.Cholecalciferol }:
+            <strong>These thresholds are for dogs. Feline data is lacking.</strong>
+            @(" There is no published cat threshold for cholecalciferol. In one experimental study 8 of 10 cats given 0.375 mg/kg a day died (VPIS 2020), so treat this as a minimum estimate.")
+            break;
+        case { } info:
+            <strong>These thresholds are for dogs. Feline data is lacking.</strong>
+            @($" There is no agreed published cat LD50 for {info.Name}, so treat this as a minimum estimate. Warfarin and diphacinone have cat thresholds.")
+            break;
+        default:
+            <strong>Cat thresholds are used for warfarin and diphacinone.</strong>
+            @(" Feline data is lacking for the other ingredients, which use the dog thresholds.")
+            break;
+    }
+</DogOnlyNotice>
 
 <form class="calc-form" @onsubmit="() => Vm.CalculateCommand.ExecuteAsync(null)" @onsubmit:preventDefault>
     <SpeciesField />

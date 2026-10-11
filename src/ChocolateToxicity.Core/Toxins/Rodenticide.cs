@@ -26,12 +26,17 @@ public enum RodenticideIngredient
 /// verified dog LD50 this is flocoumafen's, the most potent listed, and <paramref name="Ld50Verified"/> is false.
 /// </param>
 /// <param name="Ld50Verified">False when the ingredient has no verified dog LD50 and is assessed as flocoumafen.</param>
+/// <param name="LowestCatLd50MgPerKg">
+/// Lowest reported oral LD50 in cats, only where two published sources agree on it; null otherwise, and cats are then
+/// assessed with the dog figures.
+/// </param>
 public sealed record RodenticideInfo(
     RodenticideIngredient Ingredient,
     string Name,
     double DefaultConcentrationPercent,
     double? LowestDogLd50MgPerKg,
-    bool Ld50Verified = true);
+    bool Ld50Verified = true,
+    double? LowestCatLd50MgPerKg = null);
 
 /// <summary>Rat and mouse bait toxicosis in dogs. Dose is mg of active ingredient per kg.</summary>
 /// <remarks>
@@ -47,6 +52,12 @@ public sealed record RodenticideInfo(
 /// Cholecalciferol: Merck Veterinary Manual, "Cholecalciferol (Vitamin D3) Poisoning in Animals"
 /// (https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals):
 /// signs from 0.1 mg/kg, soft tissue mineralisation above 0.5 mg/kg, baits usually 0.075%.
+/// Cats: the same one-tenth-of-LD50 rule is applied with the cat LD50 where two sources agree on it. Merola 2002 (Table 1)
+/// gives cat LD50s of warfarin 5-30 mg/kg, diphacinone 15 mg/kg, difethialone &gt;16 mg/kg, and brodifacoum and bromadiolone
+/// unknown. Moorman, "Anticoagulant rodenticides: now more toxic to pests and pets", Veterinary Technician, January 2002
+/// (https://www.aspcapro.org/sites/default/files/c-vettech_0102.pdf), gives warfarin 5-50 mg/kg, diphacinone 15 mg/kg,
+/// and brodifacoum and bromadiolone 25 mg/kg. Only warfarin (lowest 5 mg/kg) and diphacinone (15 mg/kg) agree, so only
+/// those get cat thresholds; the others, and cholecalciferol (no published cat threshold in Merck), use the dog figures.
 /// </remarks>
 public static class Rodenticides
 {
@@ -66,8 +77,8 @@ public static class Rodenticides
         new(RodenticideIngredient.Difenacoum, "difenacoum", 0.005, FlocoumafenLd50MgPerKg, Ld50Verified: false),
         new(RodenticideIngredient.Difethialone, "difethialone", 0.0025, 4),
         new(RodenticideIngredient.Flocoumafen, "flocoumafen", 0.005, FlocoumafenLd50MgPerKg),
-        new(RodenticideIngredient.Diphacinone, "diphacinone", 0.005, 0.9),
-        new(RodenticideIngredient.Warfarin, "warfarin", 0.025, 20),
+        new(RodenticideIngredient.Diphacinone, "diphacinone", 0.005, 0.9, LowestCatLd50MgPerKg: 15),
+        new(RodenticideIngredient.Warfarin, "warfarin", 0.025, 20, LowestCatLd50MgPerKg: 5),
         new(RodenticideIngredient.UnknownAnticoagulant, "an unknown anticoagulant", 0.005, FlocoumafenLd50MgPerKg, Ld50Verified: false),
         new(RodenticideIngredient.Cholecalciferol, "cholecalciferol", 0.075, null),
     ];
@@ -99,6 +110,19 @@ public static class Rodenticides
         return info.LowestDogLd50MgPerKg is { } ld50 ? Anticoagulant(info.Name, ld50, info.Ld50Verified) : Cholecalciferol;
     }
 
+    /// <summary>True when the ingredient has published cat thresholds; otherwise cats are assessed with the dog figures.</summary>
+    public static bool HasCatThresholds(RodenticideIngredient ingredient) => Info(ingredient).LowestCatLd50MgPerKg is not null;
+
+    public static ToxinAssessment AssessCat(RodenticideIngredient ingredient, double activeMg, double catWeightKg) =>
+        ProfileForCat(ingredient).Assess(Dose.PerKg(activeMg, catWeightKg));
+
+    /// <summary>The cat thresholds where published (see <see cref="HasCatThresholds"/>), otherwise the dog thresholds.</summary>
+    public static ToxinProfile ProfileForCat(RodenticideIngredient ingredient)
+    {
+        var info = Info(ingredient);
+        return info.LowestCatLd50MgPerKg is { } ld50 ? Anticoagulant(info.Name, ld50, ld50Verified: true, cat: true) : ProfileFor(ingredient);
+    }
+
     public static ToxinProfile Cholecalciferol { get; } = new(
         "cholecalciferol",
         "mg/kg",
@@ -120,10 +144,11 @@ public static class Rodenticides
         "Induce emesis within 4 hours of ingestion. Merck advises activated charcoal for 0.1-0.5 mg/kg, and charcoal then " +
         "cholestyramine above 0.5 mg/kg (check the cholestyramine product is xylitol-free). Monitor calcium, phosphorus and renal values.");
 
-    private static ToxinProfile Anticoagulant(string name, double lowestLd50, bool ld50Verified)
+    private static ToxinProfile Anticoagulant(string name, double lowestLd50, bool ld50Verified, bool cat = false)
     {
+        var animal = cat ? "cat" : "dog";
         var ld50Text = ld50Verified
-            ? $"the lowest reported dog LD50 for {name}"
+            ? $"the lowest reported {animal} LD50 for {name}"
             : $"the flocoumafen dog LD50, used because there is no verified dog LD50 for {name}";
         var toxicDose = lowestLd50 / 10;
         var bands = new List<DoseBand>();
@@ -133,7 +158,10 @@ public static class Rodenticides
                 AnticoagulantDecontaminateMgPerKg,
                 RiskLevel.Moderate,
                 "Decontaminate and monitor",
-                $"From 0.02 mg/kg: below the toxic dose for {name}, but some dogs are sensitive. Decontaminate, then check PT at 48 and 72 hours."));
+                cat
+                    ? $"From 0.02 mg/kg: below the cat toxic dose for {name}. Merola's dog cut-off is kept for cats because there is no " +
+                      "published feline equivalent. Decontaminate, then check PT at 48 and 72 hours."
+                    : $"From 0.02 mg/kg: below the toxic dose for {name}, but some dogs are sensitive. Decontaminate, then check PT at 48 and 72 hours."));
         }
 
         bands.Add(new DoseBand(
@@ -159,9 +187,11 @@ public static class Rodenticides
                 $"Below {FormatMg(decontaminateFrom)} mg/kg. If the amount eaten is uncertain, decontaminate anyway or check PT 48 hours after ingestion."),
             bands,
             emesisFromDose: decontaminateFrom,
-            $"Thresholds for {name}: decontaminate from {FormatMg(decontaminateFrom)} mg/kg (Merola 2002), toxic from " +
-            $"{FormatMg(toxicDose)} mg/kg (one-tenth of the lowest dog LD50, Merck Veterinary Manual), " +
-            (ld50Verified
+            $"Thresholds for {name}{(cat ? " in cats" : "")}: decontaminate from {FormatMg(decontaminateFrom)} mg/kg (Merola 2002), toxic from " +
+            $"{FormatMg(toxicDose)} mg/kg (one-tenth of the lowest {animal} LD50, Merck Veterinary Manual), " +
+            (cat
+                ? $"lowest cat LD50 {FormatMg(lowestLd50)} mg/kg (Merola 2002 and Moorman 2002 agree)."
+                : ld50Verified
                 ? $"lowest dog LD50 {FormatMg(lowestLd50)} mg/kg."
                 : $"assessed as flocoumafen (dog LD50 {FormatMg(lowestLd50)} mg/kg) because no verified dog LD50 for {name} was found."),
             "Induce emesis within 4 hours of ingestion. At toxic doses, give vitamin K1 (Merck: 2.5 mg/kg PO every 12 hours or " +
