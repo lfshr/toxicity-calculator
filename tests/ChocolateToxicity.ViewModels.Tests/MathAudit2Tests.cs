@@ -51,8 +51,8 @@ public class MathAudit2Tests
         {
             PatientIsCat = true,
             DogWeightKg = "4",
-            SelectedIngredient = RodenticideOption.For(RodenticideIngredient.Brodifacoum),
-            ConcentrationPercent = "0.005",
+            SelectedIngredient = RodenticideOption.For(RodenticideIngredient.Warfarin),
+            ConcentrationPercent = "0.025",
             BaitEatenGrams = "0.45",
         };
 

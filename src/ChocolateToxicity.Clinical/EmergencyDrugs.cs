@@ -19,18 +19,30 @@ public sealed record EmergencyDrug(string Name, string Use, double DosePerKg, st
 /// and the 2024 RECOVER guidelines (Burkitt-Creedon et al., J Vet Emerg Crit Care 2024, doi:10.1111/vec.13391):
 /// for refractory VF or pulseless VT, lidocaine is the first choice in dogs and amiodarone the alternative, while
 /// lidocaine is not recommended in cats because of their sensitivity to its cardiovascular and CNS effects; atropine
-/// is given as a single dose; the first biphasic shock is 2 J/kg, doubled once to 4 J/kg if it fails.
+/// is given as a single dose; the first biphasic shock is 2 J/kg, doubled once to 4 J/kg if it fails. Vasopressin is the
+/// preferred first-line vasopressor for refractory VF or pulseless VT, with adrenaline only if vasopressin is unavailable,
+/// and adrenaline is not advised in shockable rhythms before they are refractory; in non-shockable rhythms, adrenaline
+/// (or vasopressin) every other BLS cycle. Atropine is 0.05 mg/kg on the chart and 0.04 mg/kg in the guideline text.
 /// </remarks>
 public static class EmergencyDrugs
 {
     private static readonly EmergencyDrug Adrenaline =
-        new("Adrenaline (epinephrine), low dose", "Arrest: every other BLS cycle (every 3-5 minutes)", 0.01, "mg", 1);
+        new("Adrenaline (epinephrine), low dose",
+            "Non-shockable rhythms (asystole, PEA): every other BLS cycle (every 3-5 minutes). Shockable rhythms: only once " +
+            "refractory, and only if vasopressin is unavailable",
+            0.01, "mg", 1);
 
     private static readonly EmergencyDrug Vasopressin =
-        new("Vasopressin", "Arrest: may replace or alternate with adrenaline", 0.8, "U", 20);
+        new("Vasopressin",
+            "Refractory VF or pulseless VT: preferred first-line vasopressor (RECOVER 2024). Non-shockable rhythms: an " +
+            "alternative to adrenaline, every 3-5 minutes",
+            0.8, "U", 20);
 
     private static readonly EmergencyDrug Atropine =
-        new("Atropine", "Arrest with suspected high vagal tone: a single dose, not repeated", 0.05, "mg", 0.54);
+        new("Atropine",
+            "Arrest with suspected high vagal tone: a single dose, not repeated. 0.05 mg/kg is the RECOVER 2024 chart dose " +
+            "(the guideline text gives 0.04 mg/kg)",
+            0.05, "mg", 0.54);
 
     private static readonly EmergencyDrug Esmolol =
         new("Esmolol", "Refractory VF or pulseless VT, over 3-5 minutes, then a 50 µg/kg/min CRI", 0.5, "mg", 10);

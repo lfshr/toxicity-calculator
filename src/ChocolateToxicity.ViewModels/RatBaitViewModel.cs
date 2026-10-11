@@ -56,7 +56,13 @@ public partial class RatBaitViewModel(INavigationService navigation) : ToxinForm
 
     protected override ResultViewModel? BuildResult(double? dogWeightKg)
     {
-        IngredientError = SelectedIngredient is null ? "Choose the active ingredient, or Unknown anticoagulant." : null;
+        IngredientError = SelectedIngredient switch
+        {
+            null => "Choose the active ingredient, or Unknown anticoagulant.",
+            { } option when PatientIsCat && !Rodenticides.HasCatThresholds(option.Info.Ingredient) =>
+                $"There are no published cat thresholds for {option.Info.Name}.",
+            _ => null,
+        };
         var concentration = NumberInput.Parse(ConcentrationPercent);
         ConcentrationError = concentration switch
         {
@@ -65,7 +71,7 @@ public partial class RatBaitViewModel(INavigationService navigation) : ToxinForm
             _ => null,
         };
         (var bait, BaitEatenError) = ParseAmount(BaitEatenGrams, "Enter the amount of bait eaten in grams.");
-        if (dogWeightKg is not { } weight || SelectedIngredient is null || ConcentrationError is not null || bait is null)
+        if (dogWeightKg is not { } weight || SelectedIngredient is null || IngredientError is not null || ConcentrationError is not null || bait is null)
         {
             return null;
         }

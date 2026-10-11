@@ -164,6 +164,6 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
             description = SelectedChocolateType.Description;
         }
 
-        await navigation.ShowResultAsync(new ResultViewModel(result, weight.Value, amount.Value, description, PatientIsCat ? "cat" : "dog"));
+        await navigation.ShowResultAsync(new ResultViewModel(result, weight.Value, amount.Value, description, PatientIsCat ? "cat" : "dog", UseCocoaPercent));
     }
 }

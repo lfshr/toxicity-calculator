@@ -3,7 +3,8 @@ using ChocolateToxicity.Core.Toxins;
 namespace ChocolateToxicity.Core.Tests;
 
 /// <summary>
-/// Cat rat bait thresholds: one-tenth of the cat LD50 (Merck), only where Merola 2002 and Moorman 2002 agree on it.
+/// Cat rat bait thresholds: only where Merola 2002 and Moorman 2002 agree on a cat LD50, and then from the lower of the
+/// dog and cat LD50s, because the two papers aren't independent evidence that cats are less sensitive.
 /// </summary>
 public class FelineRodenticideTests
 {
@@ -24,48 +25,66 @@ public class FelineRodenticideTests
     [InlineData(RodenticideIngredient.Flocoumafen)]
     [InlineData(RodenticideIngredient.UnknownAnticoagulant)]
     [InlineData(RodenticideIngredient.Cholecalciferol)]
-    public void Cats_use_the_dog_thresholds_without_agreed_feline_data(RodenticideIngredient ingredient)
+    public void Ingredients_without_agreed_feline_data_cant_be_assessed_for_a_cat(RodenticideIngredient ingredient)
     {
         Assert.False(Rodenticides.HasCatThresholds(ingredient));
-        Assert.Equal(
-            Rodenticides.ProfileFor(ingredient).ThresholdsText,
-            Rodenticides.ProfileForCat(ingredient).ThresholdsText);
-        Assert.Equal(
-            Rodenticides.ProfileFor(ingredient).Bands.Select(b => b.FromDose),
-            Rodenticides.ProfileForCat(ingredient).Bands.Select(b => b.FromDose));
+        Assert.Throws<ArgumentException>(() => Rodenticides.ProfileForCat(ingredient));
+    }
+
+    [Theory]
+    [InlineData(RodenticideIngredient.Warfarin)]
+    [InlineData(RodenticideIngredient.Diphacinone)]
+    public void Cats_use_the_lower_of_the_dog_and_cat_ld50s(RodenticideIngredient ingredient)
+    {
+        // For both, the dog LD50 is the lower (warfarin 5 vs 5, diphacinone 0.9 vs 15), so cats get the dog bands.
+        var cat = Rodenticides.ProfileForCat(ingredient);
+        var dog = Rodenticides.ProfileFor(ingredient);
+
+        Assert.Equal(dog.Bands.Select(b => b.FromDose), cat.Bands.Select(b => b.FromDose));
+        Assert.Equal(dog.EmesisFromDose, cat.EmesisFromDose, 9);
+        Assert.Contains("lower of the dog and cat LD50s", cat.ThresholdsText, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Warfarin_in_cats_is_toxic_from_a_quarter_of_the_dog_dose()
+    public void Diphacinone_in_a_cat_is_toxic_from_the_dog_dose()
     {
-        var cat = Rodenticides.ProfileForCat(RodenticideIngredient.Warfarin);
-        var dog = Rodenticides.ProfileFor(RodenticideIngredient.Warfarin);
+        // The review's example: 50 g of 0.005% bait in a 4 kg cat is 0.625 mg/kg. With the cat LD50 alone this was
+        // "decontaminate and monitor"; with the lower of the two it is a toxic dose (from 0.09 mg/kg), as in a dog.
+        var mg = Rodenticides.ActiveMgEaten(50, 0.005);
+        var assessment = Rodenticides.AssessCat(RodenticideIngredient.Diphacinone, mg, 4);
 
-        Assert.Equal(new[] { 0.02, 0.5, 5 }, cat.Bands.Select(b => b.FromDose).ToArray());
-        Assert.Equal(new[] { 0.02, 2, 20 }, dog.Bands.Select(b => b.FromDose).ToArray());
-        Assert.Equal(0.02, cat.EmesisFromDose, 9);
-        Assert.Contains("lowest cat LD50 5 mg/kg", cat.ThresholdsText, StringComparison.Ordinal);
+        Assert.Equal(0.625, assessment.DosePerKg, 9);
+        Assert.Equal(RiskLevel.High, assessment.Band.Risk);
+    }
+
+    [Theory]
+    [InlineData(RodenticideIngredient.Warfarin, "2 weeks")]
+    [InlineData(RodenticideIngredient.Diphacinone, "4 weeks")]
+    [InlineData(RodenticideIngredient.Brodifacoum, "4 weeks")]
+    public void Vitamin_k1_duration_depends_on_the_ingredient(RodenticideIngredient ingredient, string duration)
+    {
+        Assert.Contains($"for {duration}", Rodenticides.ProfileFor(ingredient).Advice, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Diphacinone_in_cats_is_toxic_from_1_5_mg_per_kg()
+    public void Decontamination_cut_off_cites_moorman_for_cats()
     {
-        var cat = Rodenticides.ProfileForCat(RodenticideIngredient.Diphacinone);
+        var band = Rodenticides.ProfileForCat(RodenticideIngredient.Warfarin).Bands[0];
 
-        Assert.Equal(new[] { 0.02, 1.5, 15 }, cat.Bands.Select(b => b.FromDose).ToArray());
-        Assert.Equal(RiskLevel.Moderate, cat.Assess(1).Band.Risk);
-        Assert.Equal(RiskLevel.High, cat.Assess(1.5).Band.Risk);
-        Assert.Equal(RiskLevel.Critical, cat.Assess(15).Band.Risk);
+        Assert.Equal(0.02, band.FromDose, 9);
+        Assert.Contains("Moorman 2002, for dogs and cats", band.Signs, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Warfarin_bait_in_a_4_kg_cat()
+    [Theory]
+    [InlineData(RodenticideIngredient.Difenacoum)]
+    [InlineData(RodenticideIngredient.UnknownAnticoagulant)]
+    public void Unverified_ld50s_are_a_precaution_not_an_expected_coagulopathy(RodenticideIngredient ingredient)
     {
-        // 10 g of 0.025% warfarin bait: 2.5 mg, 0.625 mg/kg. Toxic in a cat (from 0.5), below toxic in a dog (from 2).
-        var mg = Rodenticides.ActiveMgEaten(10, 0.025);
+        var profile = Rodenticides.ProfileFor(ingredient);
+        var toxic = profile.Bands.Single(b => b.Risk == RiskLevel.High);
 
-        Assert.Equal(0.625, Rodenticides.AssessCat(RodenticideIngredient.Warfarin, mg, 4).DosePerKg, 9);
-        Assert.Equal(RiskLevel.High, Rodenticides.AssessCat(RodenticideIngredient.Warfarin, mg, 4).Band.Risk);
-        Assert.Equal(RiskLevel.Moderate, Rodenticides.Assess(RodenticideIngredient.Warfarin, mg, 4).Band.Risk);
+        Assert.Equal(0.0075, toxic.FromDose, 9);
+        Assert.Equal("Treat as a potent second-generation bait", toxic.Title);
+        Assert.DoesNotContain("expected", toxic.Signs.Replace("not an expected", ""), StringComparison.Ordinal);
     }
 }

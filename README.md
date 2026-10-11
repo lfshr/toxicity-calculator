@@ -156,7 +156,7 @@ picker says so; for a darker bar, enter the cocoa percentage instead (an 85% bar
 Content is interpolated linearly between these points: 0-20% gives 2.3 mg/g (the Merck milk chocolate
 figure, placed at the lowest cocoa content UK and EU rules allow for milk chocolate, and held flat below it because
 US milk chocolate can be 10%, so every bar with a stated cocoa % gets at least 2.3; white chocolate goes by type), 45% (the bottom of Vets Now's 45-59% lower-grade dark band) gives 5.6, and 100% (unsweetened baking chocolate)
-gives 15.5. This deliberately overestimates for most bars, because cocoa butter dilutes theobromine and the
+gives 15.5. This curve is the app's own model, not a published one, and the result says the content is an estimate. It deliberately overestimates for most bars, because cocoa butter dilutes theobromine and the
 percentage on a label counts it. It is not valid for cocoa powder, which is defatted and far stronger per gram.
 
 ### Severity bands
@@ -168,7 +168,9 @@ percentage on a label counts it. It is not valid for cocoa powder, which is defa
 | 40 mg/kg | Severe | Cardiotoxic effects |
 | 60 mg/kg | Seizures | Tremors and seizures; potentially lethal from 100 mg/kg (Merck oral LD50 100-200 mg/kg) |
 
-Emesis is flagged for consideration from 20 mg/kg. Time since ingestion and the patient's condition remain clinical decisions.
+Emesis is flagged for consideration from 20 mg/kg. Time since ingestion and the patient's condition remain clinical
+decisions; emesis can be worthwhile up to about 6 hours after chocolate in a stable patient, because its fat delays
+gastric emptying (Animal Emergency Australia).
 
 ## Other toxins
 
@@ -181,8 +183,9 @@ Dose in mg/kg of xylitol, from the product eaten and the xylitol per 100 g on it
 
 | Dose | Expected |
 |---|---|
-| under 100 mg/kg | Hypoglycaemia not expected |
-| 100 mg/kg | Hypoglycaemia (emesis flagged) |
+| under 50 mg/kg | Below the treatment threshold |
+| 50 mg/kg | Treat (VPIS; Tox Info Suisse): emesis flagged, monitor glucose |
+| 100 mg/kg | Hypoglycaemia (Merck) |
 | 500 mg/kg | Hepatic failure |
 
 ### Ibuprofen and paracetamol
@@ -206,29 +209,32 @@ Dose in mg/kg, from the strength per tablet (or mg per mL for a liquid) and the 
 Dose in mg/kg of active ingredient, from the bait eaten and its concentration, which is filled in with the usual
 strength for the chosen ingredient.
 
-For anticoagulants the toxic dose is one-tenth of the lowest reported dog LD50, as the Merck Veterinary Manual
-describes. Emesis is flagged from 0.02 mg/kg, the conservative decontamination threshold Merola recommends, or from
-the toxic dose if that is lower.
+For anticoagulants the toxic dose is one-tenth of the lowest reported dog LD50 in Merola 2002 and Moorman 2002, as the
+Merck Veterinary Manual describes. Emesis is flagged from 0.02 mg/kg, the conservative decontamination threshold both
+papers give, or from the toxic dose if that is lower. Vitamin K1 is advised for 2 weeks for warfarin and 4 weeks for the
+others (Merck).
 
 | Ingredient | Usual bait | Lowest dog LD50 (mg/kg) | Toxic from (mg/kg) |
 |---|---|---|---|
 | Brodifacoum | 0.005% | 0.2 | 0.02 |
-| Bromadiolone | 0.005% | 11 | 1.1 |
-| Difenacoum | 0.005% | Not verified: assessed as flocoumafen, 0.075 | 0.0075 |
+| Bromadiolone | 0.005% | 0.5 (Moorman) | 0.05 |
+| Difenacoum | 0.005% | Not verified: assessed as flocoumafen, 0.075 | 0.0075 (treat as a potent second-generation bait) |
 | Difethialone | 0.0025% | 4 | 0.4 |
 | Flocoumafen | 0.005% | 0.075 | 0.0075 |
 | Diphacinone | 0.005% | 0.9 | 0.09 |
-| Warfarin | 0.025% | 20 | 2 |
+| Warfarin | 0.025% | 5 (Moorman) | 0.5 |
 | Unknown anticoagulant | 0.005% | 0.075 (as flocoumafen) | 0.0075 |
 
 Cholecalciferol (vitamin D3, usually 0.075%): signs from 0.1 mg/kg (emesis flagged), soft tissue mineralisation
 above 0.5 mg/kg.
 
-For cats, the same one-tenth rule uses the cat LD50, but only where two published sources agree on it: warfarin
-(lowest cat LD50 5 mg/kg, so toxic from 0.5 mg/kg) and diphacinone (15 mg/kg, toxic from 1.5 mg/kg). Merola 2002 and
-Moorman 2002 disagree on brodifacoum and bromadiolone (unknown vs 25 mg/kg), only Merola gives difethialone (and only as
-more than 16 mg/kg), and there is no published cat threshold for cholecalciferol, so those use the dog figures and the
-page says feline data is lacking. The 0.02 mg/kg decontamination threshold is kept for cats.
+Cats can be assessed only for warfarin and diphacinone, the two where Merola 2002 and Moorman 2002 agree on a cat LD50
+(5 and 15 mg/kg). The two papers likely share an older LD50 table, so a cat LD50 above the dog's isn't taken to mean
+cats are less sensitive: cats use the lower of the dog and cat LD50s, which for both is the dog figure. The papers
+disagree on brodifacoum and bromadiolone (unknown vs 25 mg/kg), only Merola gives difethialone (and only as more than
+16 mg/kg), and there is no published cat threshold for cholecalciferol, so those are dogs only: with Cat selected they
+are greyed out in the ingredient list, and choosing one greys out Cat. Moorman applies the 0.02 mg/kg decontamination
+threshold to dogs and cats.
 
 ## Clinical calculators (web app)
 
@@ -237,9 +243,10 @@ The patient's species and weight are entered at the top of each calculator and c
 | Calculator | Formula | Source |
 |---|---|---|
 | Apomorphine | 0.1 mg/kg SC of 1 mg/mL; 0.03-0.04 mg/kg IV | Emedog UK SPC; Merck |
+| Dexmedetomidine (cats) | 7-40 µg/kg IM or 3.5 µg/kg IV, of 0.5 mg/mL | Merck, chocolate toxicosis |
 | Ropinirole (Clevor) | Drops by weight band, 1.8-100 kg | Clevor UK SPC |
 | Activated charcoal | 1-2 g/kg PO once | Merck, chocolate toxicosis |
-| CPR drugs | Per-kg doses at an editable concentration; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
+| CPR drugs | Per-kg doses at an editable concentration; vasopressin first for refractory VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
 | Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
 | CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
 | Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013; same formulas in AAHA's current maintenance rate table |
@@ -247,31 +254,33 @@ The patient's species and weight are entered at the top of each calculator and c
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
 | Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
 
-The chocolate and xylitol calculators use dog thresholds; no published source gives cat thresholds for chocolate, and
-Merck says cats are not at risk from xylitol. Ibuprofen, paracetamol, warfarin and diphacinone use cat thresholds for a
-cat. Wherever the dog figures are used for a cat, the web app says feline data is lacking.
+Chocolate is dogs only: no published source gives cat thresholds, so Cat is greyed out there (the patient stays a cat
+in the other calculators). Ibuprofen, paracetamol, warfarin and diphacinone can be worked out for a cat, and the xylitol
+page says Merck finds cats are not at risk.
 
 ## Sources
 
 - Merck Veterinary Manual, [Chocolate Toxicosis in Animals](https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals): methylxanthine content per type and the 20, 40-50 and 60 mg/kg thresholds.
+- Gwaltney-Brant, [Chocolate intoxication](https://www.aspcapro.org/sites/default/files/m-toxbrief_0201.pdf), Veterinary Medicine 2001: the primary source for the 20, 40-50 and 60 mg/kg thresholds.
+- Animal Emergency Australia, [Chocolate toxicity in dogs: clinical protocol](https://animalemergencyaustralia.com.au/chocolate-toxicity-in-dogs/): emesis worthwhile up to 6 hours in a stable patient.
 - Merck Veterinary Manual, [Xylitol Toxicosis in Dogs](https://www.merckvetmanual.com/toxicology/food-hazards/xylitol-toxicosis-in-dogs): 100 and 500 mg/kg thresholds.
+- Tox Info Suisse, [Xylitol toxic to dogs](https://www.toxinfo.ch/xylitol_toxic_to_dogs), and the UK VPIS (Bates, Vet Times 2022): treat from 50 mg/kg.
 - Dunayer, [Ibuprofen toxicosis in dogs, cats, and ferrets](https://www.dvm360.com/view/toxciology-brief-ibuprofen-toxicosis-dogs-cats-and-ferrets), Veterinary Medicine 2004: ibuprofen thresholds from ASPCA Animal Poison Control Center data.
 - Merck Veterinary Manual, [Toxicoses From Human Analgesics in Animals](https://www.merckvetmanual.com/toxicology/toxicoses-from-human-analgesics/toxicoses-from-human-analgesics-in-animals): ibuprofen and paracetamol thresholds in dogs.
 - Merck Veterinary Manual, [Anticoagulant Rodenticide Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/anticoagulant-rodenticide-poisoning-in-animals): toxic dose as one-tenth of the lowest LD50, decontamination and vitamin K1.
 - Merola, [Anticoagulant rodenticides: Deadly for pests, dangerous for pets](https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), Veterinary Medicine 2002: dog and cat LD50s, bait concentrations and the 0.02 mg/kg decontamination threshold.
-- Moorman, [Anticoagulant rodenticides: now more toxic to pests and pets](https://www.aspcapro.org/sites/default/files/c-vettech_0102.pdf), Veterinary Technician 2002: cat LD50s, used where they agree with Merola.
-- VPIS for BASF, [Emergency treatment of cholecalciferol rodenticide poisoning](https://www.vpisglobal.com/wp-content/uploads/2021/04/Vitamin-D-toxicosis-for-vets-paper-FINAL.pdf), 2020: the experimental cat study quoted in the cat warning.
-- Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. No verifiable dog LD50 was found for difenacoum (the 50 mg/kg sometimes quoted couldn't be
-  traced to a primary source), so it is assessed like an unknown anticoagulant.
+- Moorman, [Anticoagulant rodenticides: now more toxic to pests and pets](https://www.aspcapro.org/sites/default/files/c-vettech_0102.pdf), Veterinary Technician 2002: dog and cat LD50s, and the 0.02 mg/kg threshold for dogs and cats.
+- Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. Difenacoum has no dog LD50 in Merola or
+  Moorman (WHO IPCS Health and Safety Guide 95 gives 50-100 mg/kg for non-rodent mammals, not dogs), so it is assessed like an unknown anticoagulant.
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
-- [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf): CPR drug doses, concentrations and defibrillation energies.
-- VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC.
+- [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf) and guidelines: CPR drug doses, concentrations, defibrillation energies, and vasopressin as the first-line vasopressor for refractory shockable rhythms.
+- VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC. Both: emesis contraindications.
 - AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/) (2013 guidelines) and [Maintenance fluid rates](https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance formulas.
 - Merck Veterinary Manual, [Blood Transfusions in Dogs and Cats](https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats) and [weight to BSA conversion](https://www.merckvetmanual.com/multimedia/table/weight-to-body-surface-area-conversion-for-dogs).
-- Vets Now, [My dog has eaten chocolate](https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate): the same thresholds, theobromine figures for dark chocolate and cocoa powder, and the worked examples used in the tests.
+- Vets Now, [My dog has eaten chocolate](https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate): the design reference for the calculator, and the worked examples used in the tests (not a source for the thresholds).
 
 ## Disclaimer
 
 This is a decision aid for qualified veterinary professionals, not a substitute for clinical judgement.
-Individual dogs vary in sensitivity, and product content varies by brand and batch. Where no published cat figure
-exists, the dog thresholds are shown for cats as a minimum estimate.
+Individual animals vary in sensitivity, and product content varies by brand and batch. Where no published cat figure
+exists, the calculator can't be used for a cat.

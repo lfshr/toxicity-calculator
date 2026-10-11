@@ -7,9 +7,15 @@ namespace ChocolateToxicity.Web.Components;
 public abstract class ToxinPage<TViewModel> : ViewModelPage<TViewModel>
     where TViewModel : ToxinFormViewModel
 {
+    /// <summary>Why Cat can't be chosen on this page, or null when it can; see <see cref="SpeciesField.CatUnavailable"/>.</summary>
+    protected virtual string? CatUnavailable => null;
+
+    /// <summary>True when the form works for a cat: the patient is a cat and Cat is available here.</summary>
+    protected bool IsCat => CatUnavailable is null && Patient.Species == Species.Cat;
+
     protected override void PullWeightFromPatient()
     {
-        Vm.PatientIsCat = Patient.Species == Species.Cat;
+        Vm.PatientIsCat = IsCat;
         if (Patient.WeightText.Length > 0)
         {
             Vm.DogWeightKg = Patient.WeightText;

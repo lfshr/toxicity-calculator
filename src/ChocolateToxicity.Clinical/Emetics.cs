@@ -6,7 +6,7 @@ namespace ChocolateToxicity.Clinical;
 /// <param name="Instructions">How to split the drops between the eyes.</param>
 public sealed record RopiniroleDose(int Drops, double Micrograms, string Instructions);
 
-/// <summary>Doses for inducing emesis in dogs.</summary>
+/// <summary>Doses for inducing emesis in dogs, and in cats with dexmedetomidine.</summary>
 public static class Emetics
 {
     /// <summary>
@@ -27,6 +27,18 @@ public static class Emetics
     public const double CharcoalMinGramsPerKg = 1;
 
     public const double CharcoalMaxGramsPerKg = 2;
+
+    /// <summary>
+    /// Merck Veterinary Manual, Chocolate Toxicosis: dexmedetomidine for emesis in cats, 7-40 µg/kg IM or 3.5 µg/kg IV.
+    /// </summary>
+    public const double CatDexmedetomidineImMinMicrogramsPerKg = 7;
+
+    public const double CatDexmedetomidineImMaxMicrogramsPerKg = 40;
+
+    public const double CatDexmedetomidineIvMicrogramsPerKg = 3.5;
+
+    /// <summary>Strength of the usual dexmedetomidine solution (Dexdomitor 0.5 mg/ml), in µg/mL. Check the vial.</summary>
+    public const double DexmedetomidineMicrogramsPerMl = 500;
 
     /// <summary>Clevor 30 mg/ml eye drops: each drop is about 27 µL and contains 810 µg of ropinirole.</summary>
     public const double RopiniroleMicrogramsPerDrop = 810;
