@@ -159,7 +159,7 @@ public class ToxinFormTests
         Assert.Equal("25 g x 0.005% = 1.25 mg bromadiolone, divided by 10 kg.", shown.Working);
         Assert.Equal("Consider inducing emesis", shown.Verdict);
         Assert.Equal("The dose is at or above the 0.02 mg/kg threshold for treatment.", shown.VerdictDetail);
-        Assert.Equal("Toxic dose", shown.BandTitle);
+        Assert.Equal("Decontaminate and monitor", shown.BandTitle);
     }
 
     [Theory]
