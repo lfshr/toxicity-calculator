@@ -108,7 +108,7 @@ public static class Rodenticides
                 CholecalciferolSignsMgPerKg,
                 RiskLevel.High,
                 "Hypercalcaemia risk",
-                "From 0.1 mg/kg: hypercalcaemia and hyperphosphataemia, with vomiting, polyuria, polydipsia and lethargy, usually 12-36 hours after ingestion."),
+                "From 0.1 mg/kg: hypercalcaemia and hyperphosphataemia, with vomiting, polyuria, polydipsia and lethargy, usually 12-48 hours after ingestion."),
             new DoseBand(
                 CholecalciferolMineralisationMgPerKg,
                 RiskLevel.Critical,

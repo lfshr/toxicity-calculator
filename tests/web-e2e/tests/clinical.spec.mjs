@@ -112,3 +112,18 @@ test('unit converter', async ({ page }) => {
   await page.locator('#percent').fill('2');
   await expect(page.locator('#mgml')).toHaveValue('20');
 });
+
+test('drug dose warns when splitting tablets changes the dose a lot', async ({ page }) => {
+  await open(page, 'dose');
+  await setPatient(page, '5');
+  await page.locator('#dose').fill('5');
+  await page.locator('#tablet').fill('100');
+
+  // 25 mg is a quarter tablet: rounding to halves gives 0.5 tablets, double the dose.
+  const result = page.locator('#dose-result');
+  await expect(result).toContainText('0.5 tablets');
+  await expect(page.locator('#split-warning')).toContainText('+100%');
+
+  await page.locator('#split').selectOption('4');
+  await expect(page.locator('#split-warning')).toHaveCount(0);
+});

@@ -52,6 +52,9 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
         ? $"Use whole pack ({grams.ToString("0.#", CultureInfo.CurrentCulture)} g)"
         : null;
 
+    /// <summary>True when the patient is a cat, for the summary; the Android app is for dogs only and leaves this false.</summary>
+    public bool PatientIsCat { get; set; }
+
     /// <summary>
     /// Fills in the chocolate from a product found by search: its cocoa percentage when known,
     /// otherwise the type its category implies, otherwise it asks for the type.
@@ -78,7 +81,9 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
         {
             UseCocoaPercent = false;
             SelectedChocolateType = null;
-            ProductNote = $"{product.DisplayName}: no cocoa percentage on record. Choose the type of chocolate.";
+            ProductNote = product.Caution is { } caution
+                ? $"{product.DisplayName}: {caution}"
+                : $"{product.DisplayName}: no cocoa percentage on record. Choose the type of chocolate.";
         }
     }
 
@@ -159,6 +164,6 @@ public partial class CalculatorViewModel(INavigationService navigation, IProduct
             description = SelectedChocolateType.Description;
         }
 
-        await navigation.ShowResultAsync(new ResultViewModel(result, weight.Value, amount.Value, description));
+        await navigation.ShowResultAsync(new ResultViewModel(result, weight.Value, amount.Value, description, PatientIsCat ? "cat" : "dog"));
     }
 }

@@ -119,6 +119,84 @@ public class OpenFoodFactsProductSearchTests
         Assert.Equal(ChocolateType.CocoaPowder, cocoa.SuggestedType);
     }
 
+    private static ChocolateProduct ParseOne(string json) =>
+        OpenFoodFactsProductSearch.ParseProduct(System.Text.Json.JsonDocument.Parse(json).RootElement)!;
+
+    [Theory]
+    [InlineData("Dark chocolate with 20% hazelnuts")]
+    [InlineData("30% Less Sugar Dark Chocolate")]
+    [InlineData("Dark Chocolate 35% Orange")]
+    public void A_low_percentage_in_a_dark_chocolates_name_falls_back_to_the_dark_type(string name)
+    {
+        var product = ParseOne($$"""{ "code": "9", "product_name": "{{name}}", "categories_tags": ["en:dark-chocolates"] }""");
+
+        Assert.Null(product.CocoaPercent);
+        Assert.Equal(ChocolateType.StrongDark, product.SuggestedType);
+    }
+
+    [Theory]
+    [InlineData("Noir 70% aux noisettes 15%", 70)]
+    [InlineData("Hazelnut 15% dark 72% cocoa", 72)]
+    [InlineData("Excellence 85% Cocoa", 85)]
+    [InlineData("Cacao 90%", 90)]
+    [InlineData("Lindt Excellence 78%", 78)]
+    public void Takes_the_percentage_next_to_a_cocoa_word(string name, double cocoa)
+    {
+        var product = ParseOne($$"""{ "code": "9", "product_name": "{{name}}", "categories_tags": ["en:dark-chocolates"] }""");
+
+        Assert.Equal(cocoa, product.CocoaPercent);
+        Assert.Equal(CocoaPercentSource.ProductName, product.CocoaPercentSource);
+    }
+
+    [Theory]
+    [InlineData("Organic raw cacao powder 100%")]
+    [InlineData("Cacao en poudre non sucré")]
+    [InlineData("Kakaopulver stark entölt")]
+    [InlineData("Cocoa Powder")]
+    public void Cocoa_powder_is_recognised_from_its_name(string name)
+    {
+        var product = ParseOne($$"""
+            { "code": "9", "product_name": "{{name}}", "nutriments": { "cocoa_100g": 100 },
+              "categories_tags": ["en:cocoa-and-its-products"] }
+            """);
+
+        Assert.Null(product.CocoaPercent);
+        Assert.Equal(ChocolateType.CocoaPowder, product.SuggestedType);
+        Assert.Equal(MethylxanthineContent.CocoaPowder, MethylxanthineContent.ForType(product.SuggestedType!.Value));
+    }
+
+    [Fact]
+    public void Cocoa_powder_is_recognised_from_a_powder_category()
+    {
+        var product = ParseOne("""
+            { "code": "9", "product_name": "Bio Kakao", "nutriments": { "cocoa_100g": 100 },
+              "categories_tags": ["en:cocoa-and-its-products", "de:kakaopulver"] }
+            """);
+
+        Assert.Equal(ChocolateType.CocoaPowder, product.SuggestedType);
+    }
+
+    [Fact]
+    public void Hundred_percent_cocoa_that_may_be_powder_asks_for_the_type()
+    {
+        var product = ParseOne("""
+            { "code": "9", "product_name": "Pure cacao", "nutriments": { "cocoa_100g": 100 },
+              "categories_tags": ["en:cocoa-and-its-products"] }
+            """);
+
+        Assert.Null(product.CocoaPercent);
+        Assert.Null(product.SuggestedType);
+        Assert.Contains("Cocoa powder", product.Caution);
+    }
+
+    [Fact]
+    public void Cacao_pods_and_nibs_are_not_powder()
+    {
+        var product = ParseOne("""{ "code": "9", "product_name": "Cacao nibs 100%", "categories_tags": ["en:cocoa-and-its-products"] }""");
+
+        Assert.NotEqual(ChocolateType.CocoaPowder, product.SuggestedType);
+    }
+
     [Fact]
     public void White_chocolate_goes_by_type_not_percentage()
     {

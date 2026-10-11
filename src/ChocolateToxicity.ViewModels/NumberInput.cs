@@ -40,4 +40,10 @@ internal static class NumberInput
     /// so "0.0125 mg/kg" rather than "0 mg/kg".
     /// </summary>
     public static string FormatPrecise(double value) => DisplayedDose.Format(value);
+
+    /// <summary>
+    /// Echoes a number the user typed, keeping up to three decimal places, so the working line in a clinical note
+    /// shows "0.25 x 500 mg" and "2.25 kg" rather than rounding the inputs and making the arithmetic look wrong.
+    /// </summary>
+    public static string FormatInput(double value) => value.ToString("0.###", CultureInfo.CurrentCulture);
 }

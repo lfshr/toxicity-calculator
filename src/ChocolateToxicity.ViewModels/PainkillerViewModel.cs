@@ -63,7 +63,7 @@ public partial class PainkillerViewModel : ToxinFormViewModel
         return new ResultViewModel(
             PatientIsCat ? Painkillers.AssessCat(Drug, totalMg, weight) : Painkillers.Assess(Drug, totalMg, weight),
             $"{Format(count.Value)} x {Format(strength.Value)} mg {DrugName} eaten by a {Format(weight)} kg {PatientNoun}.",
-            $"{Format(strength.Value)} mg x {Format(count.Value)} = {Format(totalMg)} mg {DrugName}, divided by {Format(weight)} kg.");
+            $"{Format(strength.Value)} mg x {Format(count.Value)} = {FormatPrecise(totalMg)} mg {DrugName}, divided by {Format(weight)} kg.");
     }
 
     protected override void ClearFields()

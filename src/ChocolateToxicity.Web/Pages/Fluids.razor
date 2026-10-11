@@ -8,7 +8,7 @@
 <div class="calc-form">
     <PatientWeightField />
 
-    <Field Label="Dehydration" For="dehydration" Hint="Under 5%: not detectable. 5-6%: subtle loss of skin elasticity. 6-8%: delayed skin tent, dry mucous membranes. 10-12%: sunken eyes, shock signs."
+    <Field Label="Dehydration" For="dehydration" Hint="Under 5%: not detectable. 5-6%: subtle loss of skin elasticity. 6-8%: delayed skin tent, dry mucous membranes. 8-10%: marked skin tenting, prolonged CRT, sunken eyes. 10-12%: shock signs."
            Error="@(Parse(dehydrationText) is < 0 or > 15 ? "Enter 0 to 15%." : null)">
         <NumberInput Id="dehydration" Value="@dehydrationText" ValueChanged="v => dehydrationText = v" Unit="%" Placeholder="e.g. 6" />
     </Field>
@@ -49,7 +49,7 @@
             }
         </table>
         <p class="hint">
-            Maintenance: @(Species == Species.Cat ? "80" : "132") x weight<sup>0.75</sup> mL/day (AAHA 2013 fluid therapy guidelines, @SpeciesName).
+            Maintenance: @(Species == Species.Cat ? "80" : "132") x weight<sup>0.75</sup> mL/day (AAHA fluid therapy guidelines and maintenance rate table, @SpeciesName).
             Deficit: % dehydration x weight (kg) x 1000 mL. Reassess the patient and adjust the rate regularly.
         </p>
     </section>

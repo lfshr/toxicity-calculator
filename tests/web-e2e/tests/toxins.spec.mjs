@@ -159,3 +159,14 @@ test('a result opened directly goes home', async ({ page }) => {
   await open(page, 'result');
   await expect(page).toHaveURL(/\/$/);
 });
+
+test('chocolate in a cat says cat in the summary and keeps the weight as typed', async ({ page }) => {
+  await open(page, 'toxins/chocolate');
+  await setPatient(page, '4.25', 'Cat');
+  await page.locator('#type').selectOption('Milk');
+  await page.locator('#amount').fill('12.5');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  await expect(page.getByText('12.5 g of milk chocolate eaten by a 4.25 kg cat.')).toBeVisible();
+  await expect(page.getByText('kg dog')).toHaveCount(0);
+});
