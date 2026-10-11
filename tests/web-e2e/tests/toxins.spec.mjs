@@ -118,7 +118,7 @@ test('rat bait fills in the usual concentration', async ({ page }) => {
 });
 
 test('the patient weight and species carry between calculators', async ({ page }) => {
-  await open(page, 'toxins/chocolate');
+  await open(page, 'toxins/xylitol');
   await setPatient(page, '12', 'Cat');
   await page.getByRole('link', { name: 'All calculators' }).click();
   await page.locator('.calc-card', { hasText: 'Fluid therapy' }).click();
@@ -127,33 +127,47 @@ test('the patient weight and species carry between calculators', async ({ page }
   await page.locator('#weight').fill('14');
   await expect(page.getByText('30.9 lb. Shared with the other calculators.')).toBeVisible();
   await page.getByRole('link', { name: 'All calculators' }).click();
-  await page.locator('.calc-card', { hasText: 'Chocolate' }).click();
+  await page.locator('.calc-card', { hasText: 'Xylitol' }).click();
   await expect(page.locator('#weight')).toHaveValue('14');
   await expect(page.getByText("Cat's weight")).toBeVisible();
 });
 
 test('the header has no patient fields', async ({ page }) => {
-  await open(page, 'toxins/chocolate');
+  await open(page, 'toxins/xylitol');
   await setPatient(page, '4', 'Cat');
   await expect(page.locator('.app-header input')).toHaveCount(0);
   await expect(page.locator('.app-header [role="radio"]')).toHaveCount(0);
   await expect(page.getByText('New patient')).toHaveCount(0);
 });
 
-test('cats get a warning on dog-only toxin thresholds', async ({ page }) => {
-  await open(page, 'toxins/chocolate');
-  await setPatient(page, '4', 'Cat');
-  await expect(page.getByText('These thresholds are for dogs.')).toBeVisible();
-  await expect(page.getByText(/Feline data is lacking/)).toBeVisible();
+test('chocolate is dogs only: Cat is greyed out, and the patient stays a cat elsewhere', async ({ page }) => {
+  await open(page, 'fluids');
+  await setPatient(page, '4.25', 'Cat');
+  await page.getByRole('link', { name: 'All calculators' }).click();
+  await page.locator('.calc-card', { hasText: 'Chocolate' }).click();
+  const cat = page.getByRole('radio', { name: 'Cat', exact: true });
+  await expect(cat).toBeDisabled();
+  await expect(page.getByRole('radio', { name: 'Dog', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Dogs only: there are no published cat thresholds for chocolate.')).toBeVisible();
+  await expect(page.getByText("Dog's weight")).toBeVisible();
+  await page.locator('#type').selectOption('Milk');
+  await page.locator('#amount').fill('12.5');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+  await expect(page.getByText('12.5 g of milk chocolate eaten by a 4.25 kg dog.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Back to calculator' }).first().click();
+  await page.getByRole('link', { name: 'All calculators' }).click();
+  await page.locator('.calc-card', { hasText: 'Fluid therapy' }).click();
+  await expect(page.getByRole('radio', { name: 'Cat', exact: true })).toHaveAttribute('aria-checked', 'true');
 });
 
-test('rat bait in a cat uses cat thresholds where they are published', async ({ page }) => {
+test('rat bait in a cat only offers ingredients with cat thresholds', async ({ page }) => {
   await open(page, 'toxins/rat-bait');
   await setPatient(page, '4', 'Cat');
-  await page.locator('#ingredient').selectOption('Brodifacoum');
-  await expect(page.getByText(/no agreed published cat LD50 for brodifacoum/)).toBeVisible();
+  await expect(page.locator('#ingredient option', { hasText: 'Brodifacoum (dogs only)' })).toBeDisabled();
+  await expect(page.locator('#ingredient option', { hasText: 'Cholecalciferol' })).toBeDisabled();
   await page.locator('#ingredient').selectOption('Warfarin');
-  await expect(page.getByText('Cat thresholds used for warfarin.')).toBeVisible();
+  await expect(page.getByText(/Cat thresholds for warfarin/)).toBeVisible();
   await page.locator('#bait').fill('10');
   await page.getByRole('button', { name: 'Calculate' }).click();
 
@@ -161,6 +175,16 @@ test('rat bait in a cat uses cat thresholds where they are published', async ({ 
   await expect(page.locator('#dose')).toHaveText('0.625 mg/kg');
   await expect(page.getByText('Toxic dose', { exact: true })).toBeVisible();
   await expect(page.getByText(/lowest cat LD50 5 mg\/kg/)).toBeVisible();
+});
+
+test('rat bait greys out Cat for an ingredient with no cat thresholds', async ({ page }) => {
+  await open(page, 'toxins/rat-bait');
+  await setPatient(page, '10', 'Dog');
+  await page.locator('#ingredient').selectOption('Brodifacoum');
+  await expect(page.getByRole('radio', { name: 'Cat', exact: true })).toBeDisabled();
+  await expect(page.getByText(/Dogs only for brodifacoum/)).toBeVisible();
+  await page.locator('#ingredient').selectOption('Diphacinone');
+  await expect(page.getByRole('radio', { name: 'Cat', exact: true })).toBeEnabled();
 });
 
 test('paracetamol in a cat uses cat guidance, not the dog thresholds', async ({ page }) => {
@@ -186,15 +210,4 @@ test('xylitol in a cat says cats are not at risk', async ({ page }) => {
 test('a result opened directly goes home', async ({ page }) => {
   await open(page, 'result');
   await expect(page).toHaveURL(/\/$/);
-});
-
-test('chocolate in a cat says cat in the summary and keeps the weight as typed', async ({ page }) => {
-  await open(page, 'toxins/chocolate');
-  await setPatient(page, '4.25', 'Cat');
-  await page.locator('#type').selectOption('Milk');
-  await page.locator('#amount').fill('12.5');
-  await page.getByRole('button', { name: 'Calculate' }).click();
-
-  await expect(page.getByText('12.5 g of milk chocolate eaten by a 4.25 kg cat.')).toBeVisible();
-  await expect(page.getByText('kg dog')).toHaveCount(0);
 });

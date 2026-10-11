@@ -5,14 +5,28 @@
 <fieldset class="field species-field">
     <legend>Patient</legend>
     <div class="segmented" role="radiogroup" aria-label="Species">
-        <button type="button" role="radio" aria-checked="@(Patient.Species == Species.Dog ? "true" : "false")"
-                class="@(Patient.Species == Species.Dog ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Dog)">Dog</button>
-        <button type="button" role="radio" aria-checked="@(Patient.Species == Species.Cat ? "true" : "false")"
-                class="@(Patient.Species == Species.Cat ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Cat)">Cat</button>
+        <button type="button" role="radio" aria-checked="@(!IsCat ? "true" : "false")"
+                class="@(!IsCat ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Dog)">Dog</button>
+        <button type="button" role="radio" aria-checked="@(IsCat ? "true" : "false")" disabled="@(CatUnavailable is not null)"
+                aria-describedby="@(CatUnavailable is not null ? "cat-unavailable" : null)"
+                class="@(IsCat ? "selected" : "")" @onclick="() => Patient.SetSpecies(Species.Cat)">Cat</button>
     </div>
+    @if (CatUnavailable is not null)
+    {
+        <p class="hint" id="cat-unavailable">@CatUnavailable</p>
+    }
 </fieldset>
 
 @code {
+    /// <summary>
+    /// Why Cat can't be chosen here, such as a toxin with no published cat thresholds; null when it can. While set, the
+    /// page works for a dog, but the shared patient keeps its species for the other calculators.
+    /// </summary>
+    [Parameter]
+    public string? CatUnavailable { get; set; }
+
+    private bool IsCat => CatUnavailable is null && Patient.Species == Species.Cat;
+
     protected override void OnInitialized() => Patient.Changed += Refresh;
 
     private void Refresh() => InvokeAsync(StateHasChanged);

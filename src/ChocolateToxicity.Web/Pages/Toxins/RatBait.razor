@@ -6,41 +6,30 @@
 
 <PageHeader Title="Rat and mouse bait"
             Intro="Estimate the dose of a bait's active ingredient, and whether to consider inducing emesis. The ingredient and its concentration are on the pack." />
-<DogOnlyNotice>
-    @switch (Vm.SelectedIngredient?.Info)
-    {
-        case { LowestCatLd50MgPerKg: { } catLd50 } info:
-            <strong>Cat thresholds used for @info.Name.</strong>
-            @($" Toxic from one-tenth of the cat LD50 of {catLd50} mg/kg (Merola 2002 and Moorman 2002 agree; Merck's one-tenth rule).")
-            break;
-        case { Ingredient: RodenticideIngredient.Cholecalciferol }:
-            <strong>These thresholds are for dogs. Feline data is lacking.</strong>
-            @(" There is no published cat threshold for cholecalciferol. In one experimental study 8 of 10 cats given 0.375 mg/kg a day died (VPIS 2020), so treat this as a minimum estimate.")
-            break;
-        case { } info:
-            <strong>These thresholds are for dogs. Feline data is lacking.</strong>
-            @($" There is no agreed published cat LD50 for {info.Name}, so treat this as a minimum estimate. Warfarin and diphacinone have cat thresholds.")
-            break;
-        default:
-            <strong>Cat thresholds are used for warfarin and diphacinone.</strong>
-            @(" Feline data is lacking for the other ingredients, which use the dog thresholds.")
-            break;
-    }
-</DogOnlyNotice>
+@if (IsCat)
+{
+    <div class="notice warning" role="note">
+        <strong>Cat selected.</strong>
+        @(Vm.SelectedIngredient?.Info is { LowestCatLd50MgPerKg: { } catLd50 } info
+            ? $" Cat thresholds for {info.Name}: toxic from one-tenth of the cat LD50 of {catLd50} mg/kg (Merola 2002 and Moorman 2002 agree; Merck's one-tenth rule)."
+            : " Only warfarin and diphacinone have published cat thresholds, so the other ingredients are for dogs only.")
+    </div>
+}
 
 <form class="calc-form" @onsubmit="() => Vm.CalculateCommand.ExecuteAsync(null)" @onsubmit:preventDefault>
-    <SpeciesField />
-    <Field Label="@($"{(Patient.Species == Species.Cat ? "Cat" : "Dog")}'s weight")" For="weight" Error="@Vm.DogWeightError">
+    <SpeciesField CatUnavailable="@CatUnavailable" />
+    <Field Label="@($"{(IsCat ? "Cat" : "Dog")}'s weight")" For="weight" Error="@Vm.DogWeightError">
         <NumberInput Id="weight" Value="@Vm.DogWeightKg" ValueChanged="OnWeightChanged" Unit="kg" Placeholder="e.g. 12.5" Invalid="@(Vm.DogWeightError is not null)" />
     </Field>
 
     <Field Label="Active ingredient" For="ingredient" Error="@Vm.IngredientError"
-           Hint="If the pack is missing, choose Unknown anticoagulant: it uses the most potent one listed.">
+           Hint="@(IsCat ? "For a cat, only warfarin and diphacinone have published thresholds." : "If the pack is missing, choose Unknown anticoagulant: it uses the most potent one listed.")">
         <select id="ingredient" value="@(Vm.SelectedIngredient?.Info.Ingredient.ToString() ?? "")" @onchange="OnIngredientChanged">
             <option value="">Choose...</option>
             @foreach (var option in Vm.Ingredients)
             {
-                <option value="@option.Info.Ingredient">@option.Name</option>
+                var dogOnly = IsCat && !Rodenticides.HasCatThresholds(option.Info.Ingredient);
+                <option value="@option.Info.Ingredient" disabled="@dogOnly">@(dogOnly ? $"{option.Name} (dogs only)" : option.Name)</option>
             }
         </select>
     </Field>
@@ -60,6 +49,15 @@
 @code {
     protected override RatBaitViewModel Vm => ViewModel;
 
-    private void OnIngredientChanged(ChangeEventArgs e) =>
+    // No published cat thresholds for the chosen ingredient (see Rodenticides.HasCatThresholds): the form works for a dog.
+    protected override string? CatUnavailable =>
+        Vm.SelectedIngredient is { } option && !Rodenticides.HasCatThresholds(option.Info.Ingredient)
+            ? $"Dogs only for {option.Info.Name}: there are no agreed published cat thresholds. Warfarin and diphacinone have them."
+            : null;
+
+    private void OnIngredientChanged(ChangeEventArgs e)
+    {
         Vm.SelectedIngredient = Enum.TryParse<RodenticideIngredient>(e.Value?.ToString(), out var ingredient) ? RodenticideOption.For(ingredient) : null;
+        Vm.PatientIsCat = IsCat;
+    }
 }

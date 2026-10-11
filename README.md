@@ -227,8 +227,9 @@ above 0.5 mg/kg.
 For cats, the same one-tenth rule uses the cat LD50, but only where two published sources agree on it: warfarin
 (lowest cat LD50 5 mg/kg, so toxic from 0.5 mg/kg) and diphacinone (15 mg/kg, toxic from 1.5 mg/kg). Merola 2002 and
 Moorman 2002 disagree on brodifacoum and bromadiolone (unknown vs 25 mg/kg), only Merola gives difethialone (and only as
-more than 16 mg/kg), and there is no published cat threshold for cholecalciferol, so those use the dog figures and the
-page says feline data is lacking. The 0.02 mg/kg decontamination threshold is kept for cats.
+more than 16 mg/kg), and there is no published cat threshold for cholecalciferol, so those are dogs only: with Cat
+selected they are greyed out in the ingredient list, and choosing one greys out Cat. The 0.02 mg/kg decontamination
+threshold is kept for cats.
 
 ## Clinical calculators (web app)
 
@@ -247,9 +248,9 @@ The patient's species and weight are entered at the top of each calculator and c
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
 | Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
 
-The chocolate and xylitol calculators use dog thresholds; no published source gives cat thresholds for chocolate, and
-Merck says cats are not at risk from xylitol. Ibuprofen, paracetamol, warfarin and diphacinone use cat thresholds for a
-cat. Wherever the dog figures are used for a cat, the web app says feline data is lacking.
+Chocolate is dogs only: no published source gives cat thresholds, so Cat is greyed out there (the patient stays a cat
+in the other calculators). Ibuprofen, paracetamol, warfarin and diphacinone use cat thresholds for a cat, and the xylitol
+page says Merck finds cats are not at risk.
 
 ## Sources
 
@@ -274,4 +275,4 @@ cat. Wherever the dog figures are used for a cat, the web app says feline data i
 
 This is a decision aid for qualified veterinary professionals, not a substitute for clinical judgement.
 Individual dogs vary in sensitivity, and product content varies by brand and batch. Where no published cat figure
-exists, the dog thresholds are shown for cats as a minimum estimate.
+exists, the calculator can't be used for a cat.

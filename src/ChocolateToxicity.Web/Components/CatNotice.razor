@@ -1,0 +1,21 @@
+@inject PatientState Patient
+@implements IDisposable
+
+@if (Patient.Species == Species.Cat)
+{
+    <div class="notice warning" role="note">
+        @ChildContent
+    </div>
+}
+
+@code {
+    /// <summary>What to say when the patient is a cat.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized() => Patient.Changed += Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Patient.Changed -= Refresh;
+}
