@@ -1,0 +1,43 @@
+name: Live product search
+
+# Searches the real Open Food Facts service from a browser, against both a fresh build and the deployed site.
+# Run it from the Actions tab; it isn't part of CI because it depends on Open Food Facts being up.
+on:
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: dotnet publish src/ChocolateToxicity.Web --configuration Release --output publish/web
+      - run: npm ci
+        working-directory: tests/web-e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: tests/web-e2e
+      - name: Search from a fresh build
+        run: npx playwright test --config live/live.config.mjs --output live-results/build
+        working-directory: tests/web-e2e
+      - name: Search on the deployed site
+        run: npx playwright test --config live/live.config.mjs --output live-results/deployed
+        working-directory: tests/web-e2e
+        if: always()
+        env:
+          BASE_URL: https://lfshr.github.io/${{ github.event.repository.name }}/
+        continue-on-error: true
+      # Prints the screenshots too, for reading them without downloading the artifact.
+      - name: Print screenshots
+        if: always()
+        working-directory: tests/web-e2e
+        run: for f in $(find live-results -name page.png | sort); do echo "PNG $f $(base64 -w0 "$f")"; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-search
+          path: tests/web-e2e/live-results

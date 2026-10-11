@@ -56,8 +56,8 @@ public partial class XylitolViewModel(INavigationService navigation) : ToxinForm
                 xylitolMg = Xylitol.MgEaten(product.Value, per100!.Value);
             }
 
-            summary = $"{Format(product ?? 0)} g of a product with {Format(per100 ?? 0)} g xylitol per 100 g";
-            working = $"{Format(product ?? 0)} g x {Format(per100 ?? 0)} g per 100 g = {FormatPrecise(xylitolMg ?? 0)} mg xylitol";
+            summary = $"{Format(product ?? 0)} g of a product with {FormatPrecise(per100 ?? 0)} g xylitol per 100 g";
+            working = $"{FormatPrecise(product ?? 0)} g x {FormatPrecise(per100 ?? 0)} g per 100 g = {FormatPrecise(xylitolMg ?? 0)} mg xylitol";
         }
 
         if (dogWeightKg is not { } weight || xylitolMg is null)

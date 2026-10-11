@@ -6,16 +6,45 @@ public class ToxicityCalculatorTests
 {
     [Theory]
     [InlineData(0, SeverityBand.None)]
-    [InlineData(19.99, SeverityBand.None)]
+    [InlineData(19.94, SeverityBand.None)]
     [InlineData(20, SeverityBand.Mild)]
-    [InlineData(39.99, SeverityBand.Mild)]
+    [InlineData(39.94, SeverityBand.Mild)]
     [InlineData(40, SeverityBand.Severe)]
-    [InlineData(59.99, SeverityBand.Severe)]
+    [InlineData(59.94, SeverityBand.Severe)]
     [InlineData(60, SeverityBand.Seizures)]
     [InlineData(500, SeverityBand.Seizures)]
     public void Bands_follow_published_thresholds(double doseMgPerKg, SeverityBand expected)
     {
         Assert.Equal(expected, ToxicityThresholds.BandFor(doseMgPerKg));
+    }
+
+    [Theory]
+    [InlineData(19.96)]
+    [InlineData(19.999999999999996)]
+    public void A_dose_shown_as_20_is_banded_as_20(double doseMgPerKg)
+    {
+        Assert.Equal("20", DisplayedDose.Format(doseMgPerKg, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(SeverityBand.Mild, ToxicityThresholds.BandFor(doseMgPerKg));
+    }
+
+    [Theory]
+    [InlineData(100, 11.5)]
+    [InlineData(200, 23)]
+    public void Milk_chocolate_exactly_at_20_mg_per_kg_is_mild(double grams, double dogKg)
+    {
+        // 2.3 x 100 / 11.5 is 20 on paper but 19.999999999999996 in floating point.
+        var result = ToxicityCalculator.Calculate(ChocolateType.Milk, grams, dogKg);
+
+        Assert.Equal(SeverityBand.Mild, result.Band);
+        Assert.True(result.EmesisIndicated);
+    }
+
+    [Fact]
+    public void A_low_cocoa_milk_bar_gets_at_least_the_milk_chocolate_content()
+    {
+        // A UK milk bar labelled 26% cocoa: by percentage it must not come out lower than "Milk chocolate" by type.
+        Assert.True(MethylxanthineContent.ForCocoaPercent(26) >= MethylxanthineContent.Milk);
+        Assert.Equal(SeverityBand.Mild, ToxicityCalculator.CalculateFromCocoaPercent(26, 100, 10).Band);
     }
 
     [Fact]
@@ -41,13 +70,20 @@ public class ToxicityCalculatorTests
     [Theory]
     [InlineData(ChocolateType.White, 0.04)]
     [InlineData(ChocolateType.Milk, 2.3)]
-    [InlineData(ChocolateType.MildDark, 5.6)]
     [InlineData(ChocolateType.Baking, 15.5)]
     [InlineData(ChocolateType.CocoaPowder, 28.5)]
     [InlineData(ChocolateType.CocoaBeanHulls, 9.0)]
     public void Type_content_matches_Merck(ChocolateType type, double expectedMgPerGram)
     {
         Assert.Equal(expectedMgPerGram, MethylxanthineContent.ForType(type));
+    }
+
+    [Fact]
+    public void Mild_dark_uses_the_top_of_its_band()
+    {
+        // 35-50% cocoa: the type gives what a 50% bar gets from its cocoa percentage, 6.5 mg/g.
+        Assert.Equal(MethylxanthineContent.ForCocoaPercent(50), MethylxanthineContent.ForType(ChocolateType.MildDark));
+        Assert.Equal(6.5, MethylxanthineContent.ForType(ChocolateType.MildDark), 6);
     }
 
     [Fact]
@@ -60,11 +96,13 @@ public class ToxicityCalculatorTests
 
     [Theory]
     [InlineData(0, 0)]
-    [InlineData(30, 2.3)]
+    [InlineData(20, 2.3)]
     [InlineData(45, 5.6)]
     [InlineData(100, 15.5)]
-    [InlineData(15, 1.15)]
-    [InlineData(40, 4.5)]
+    [InlineData(10, 1.15)]
+    [InlineData(26, 3.092)]
+    [InlineData(30, 3.62)]
+    [InlineData(40, 4.94)]
     [InlineData(70, 10.1)]
     public void Cocoa_percent_curve_passes_through_Merck_anchors(double cocoaPercent, double expectedMgPerGram)
     {
@@ -93,7 +131,7 @@ public class ToxicityCalculatorTests
     [Fact]
     public void Cocoa_percent_and_type_give_the_same_result_at_anchor_points()
     {
-        var fromPercent = ToxicityCalculator.CalculateFromCocoaPercent(30, 100, 10);
+        var fromPercent = ToxicityCalculator.CalculateFromCocoaPercent(20, 100, 10);
         var fromType = ToxicityCalculator.Calculate(ChocolateType.Milk, 100, 10);
 
         Assert.Equal(fromType.DoseMgPerKg, fromPercent.DoseMgPerKg, 6);

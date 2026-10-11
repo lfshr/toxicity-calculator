@@ -45,13 +45,15 @@ public class VetsNowExampleTests
     }
 
     [Fact]
-    public void Three_and_a_half_grams_of_dark_chocolate_per_kg_is_at_the_toxic_threshold()
+    public void Three_and_a_half_grams_of_dark_chocolate_per_kg_reaches_the_toxic_threshold()
     {
         // "Owners whose dogs have eaten 3.5g of dark chocolate for every 1kg they weigh ... should consult their vet."
         const double dogKg = 10;
         var result = ToxicityCalculator.Calculate(ChocolateType.MildDark, 3.5 * dogKg, dogKg);
 
-        Assert.InRange(result.DoseMgPerKg, ToxicityThresholds.MildMgPerKg * 0.95, ToxicityThresholds.MildMgPerKg * 1.05);
+        // Mild dark is worked out at the top of its 35-50% band, 6.5 mg/g, so this errs just above the threshold.
+        Assert.InRange(result.DoseMgPerKg, ToxicityThresholds.MildMgPerKg, ToxicityThresholds.MildMgPerKg * 1.15);
+        Assert.Equal(SeverityBand.Mild, result.Band);
     }
 
     [Fact]

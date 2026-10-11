@@ -13,7 +13,10 @@ public sealed record ChocolateTypeOption(ChocolateType Type, string Name)
         new(ChocolateType.White, "White chocolate"),
         new(ChocolateType.Milk, "Milk chocolate"),
         new(ChocolateType.MildDark, "Mild dark chocolate (35-50% cocoa)") { Description = "mild dark chocolate" },
-        new(ChocolateType.StrongDark, "Strong dark chocolate (over 50% cocoa)") { Description = "strong dark chocolate" },
+        new(ChocolateType.StrongDark, "Dark chocolate over 50%, % unknown (assumes 70%)")
+        {
+            Description = "dark chocolate (70% cocoa assumed)",
+        },
         new(ChocolateType.Baking, "Baking chocolate (unsweetened)") { Description = "unsweetened baking chocolate" },
         new(ChocolateType.CocoaPowder, "Cocoa powder"),
         new(ChocolateType.CocoaBeanHulls, "Cocoa bean shell mulch"),

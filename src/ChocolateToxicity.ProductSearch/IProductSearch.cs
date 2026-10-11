@@ -13,4 +13,9 @@ public interface IProductSearch
     Task<ChocolateProduct?> GetProductAsync(string barcode, CancellationToken cancellationToken = default);
 }
 
-public sealed class ProductSearchException(string message, Exception? innerException = null) : Exception(message, innerException);
+public sealed class ProductSearchException(string message, Exception? innerException = null, bool isTransient = false)
+    : Exception(message, innerException)
+{
+    /// <summary>True when the request failed in a way that may well succeed if tried again, such as a busy server.</summary>
+    public bool IsTransient { get; } = isTransient;
+}

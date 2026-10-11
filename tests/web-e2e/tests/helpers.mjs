@@ -16,6 +16,8 @@ export async function stubOpenFoodFacts(page) {
   await page.route('https://search.openfoodfacts.org/**', route => route.abort('failed'));
   await page.route('https://world.openfoodfacts.org/cgi/search.pl**', route =>
     route.fulfill({ contentType: 'application/json', body: fixture('search.json'), headers: { 'Access-Control-Allow-Origin': '*' } }));
+  await page.route('https://world.openfoodfacts.org/api/v2/search?**', route =>
+    route.fulfill({ contentType: 'application/json', body: fixture('search.json'), headers: { 'Access-Control-Allow-Origin': '*' } }));
   await page.route('https://world.openfoodfacts.org/api/v2/product/**', route =>
     route.fulfill({ contentType: 'application/json', body: fixture('product-lindt.json'), headers: { 'Access-Control-Allow-Origin': '*' } }));
   await page.route('https://images.openfoodfacts.org/**', route =>

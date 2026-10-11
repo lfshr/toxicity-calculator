@@ -11,7 +11,7 @@
 
 @if (WeightKg is { } kg)
 {
-    var (exMin, exMax) = EmergencyDrugs.ExternalDefibrillation(kg, biphasic);
+    var (exFirst, exLater) = EmergencyDrugs.ExternalDefibrillation(kg, biphasic);
     var (inMin, inMax) = EmergencyDrugs.InternalDefibrillation(kg, biphasic);
 
     <div class="table-scroll">
@@ -20,7 +20,7 @@
                 <tr><th>Drug</th><th>Dose</th><th>Concentration</th><th>Give</th></tr>
             </thead>
             <tbody>
-                @foreach (var drug in EmergencyDrugs.All)
+                @foreach (var drug in EmergencyDrugs.For(Species))
                 {
                     var concentration = Concentration(drug);
                     <tr>
@@ -46,13 +46,25 @@
             <button type="button" role="radio" aria-checked="@(!biphasic ? "true" : "false")" class="@(!biphasic ? "selected" : "")" @onclick="() => biphasic = false">Monophasic</button>
             <button type="button" role="radio" aria-checked="@(biphasic ? "true" : "false")" class="@(biphasic ? "selected" : "")" @onclick="() => biphasic = true">Biphasic</button>
         </div>
-        <p class="big" id="defib">External: @F(exMin)-@F(exMax) J</p>
+        <p class="big" id="defib">External: first shock @F(exFirst) J, later shocks @F(exLater) J</p>
         <p>Internal (open chest): @F(inMin)-@F(inMax) J</p>
-        <p class="hint">@(biphasic ? "2-4 J/kg external, 0.2-0.4 J/kg internal." : "4-6 J/kg external, 0.5-1 J/kg internal.") RECOVER suggests raising the energy by 50% for later shocks if the first fails.</p>
+        <p class="hint">
+            @(biphasic
+                ? "Biphasic: 2 J/kg for the first shock. If it fails, RECOVER 2024 doubles the energy once, to 4 J/kg, and advises against going higher. Internal 0.2-0.4 J/kg."
+                : "Monophasic: RECOVER 2024 gives 4-6 J/kg; start at 4 J/kg and use up to 6 J/kg if the first shock fails. Internal 0.5-1 J/kg.")
+        </p>
     </section>
 
+    @if (Species == Species.Cat)
+    {
+        <p class="notice warning" id="lidocaine-cat">
+            Lidocaine is left out for cats: RECOVER 2024 doesn't recommend it, because cats are more sensitive to its
+            cardiovascular and nervous system effects. Use amiodarone for refractory VF or pulseless VT.
+        </p>
+    }
+
     <p class="hint">
-        Source: RECOVER 2024 CPR drug dosing chart (recoverinitiative.org). Atropine is often 0.6 mg/mL in the UK; change the
+        Source: RECOVER 2024 CPR drug dosing chart and guidelines (recoverinitiative.org). Atropine is often 0.6 mg/mL in the UK; change the
         concentration to match the vial. Esmolol is followed by a 50 µg/kg/min CRI: see the <a href="cri">CRI calculator</a>.
     </p>
 }

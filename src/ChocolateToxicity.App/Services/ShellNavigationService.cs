@@ -11,7 +11,6 @@ public sealed class ShellNavigationService(IServiceProvider services) : INavigat
 		Page page = kind switch
 		{
 			ToxinKind.Chocolate => services.GetRequiredService<CalculatorPage>(),
-			ToxinKind.GrapesAndRaisins => services.GetRequiredService<GrapesPage>(),
 			ToxinKind.Xylitol => services.GetRequiredService<XylitolPage>(),
 			ToxinKind.Ibuprofen => new PainkillerPage(new PainkillerViewModel(this, Painkiller.Ibuprofen)),
 			ToxinKind.Paracetamol => new PainkillerPage(new PainkillerViewModel(this, Painkiller.Paracetamol)),

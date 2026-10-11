@@ -19,7 +19,6 @@ public sealed class WebNavigationService(NavigationManager navigation) : INaviga
     public static string PathFor(ToxinKind kind) => kind switch
     {
         ToxinKind.Chocolate => "toxins/chocolate",
-        ToxinKind.GrapesAndRaisins => "toxins/grapes",
         ToxinKind.Xylitol => "toxins/xylitol",
         ToxinKind.Ibuprofen => "toxins/ibuprofen",
         ToxinKind.Paracetamol => "toxins/paracetamol",

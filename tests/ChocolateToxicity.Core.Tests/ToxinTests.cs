@@ -4,27 +4,6 @@ namespace ChocolateToxicity.Core.Tests;
 
 public class ToxinTests
 {
-    [Theory]
-    [InlineData(GrapeForm.Grapes, 10, 10, 1, RiskLevel.High)]
-    [InlineData(GrapeForm.Grapes, 196, 10, 19.6, RiskLevel.Critical)]
-    [InlineData(GrapeForm.Dried, 27, 10, 2.7, RiskLevel.High)]
-    [InlineData(GrapeForm.Dried, 28, 10, 2.8, RiskLevel.Critical)]
-    public void Grapes_dose_is_grams_per_kg(GrapeForm form, double grams, double weight, double expectedDose, RiskLevel risk)
-    {
-        var assessment = GrapesAndRaisins.Assess(form, grams, weight);
-
-        Assert.Equal(expectedDose, assessment.DosePerKg, 6);
-        Assert.Equal("g/kg", assessment.Profile.DoseUnit);
-        Assert.Equal(risk, assessment.Band.Risk);
-    }
-
-    [Fact]
-    public void Any_grape_ingestion_indicates_emesis()
-    {
-        Assert.True(GrapesAndRaisins.Assess(GrapeForm.Grapes, 1, 40).EmesisIndicated);
-        Assert.False(GrapesAndRaisins.Assess(GrapeForm.Grapes, 0, 40).EmesisIndicated);
-    }
-
     [Fact]
     public void Xylitol_from_label()
     {
@@ -164,7 +143,7 @@ public class ToxinTests
     {
         ToxinProfile[] profiles =
         [
-            GrapesAndRaisins.Grapes, GrapesAndRaisins.Dried, Xylitol.Profile, Painkillers.Ibuprofen, Painkillers.Paracetamol,
+            Xylitol.Profile, Painkillers.Ibuprofen, Painkillers.Paracetamol,
             .. Rodenticides.All.Select(i => Rodenticides.ProfileFor(i.Ingredient)),
         ];
 

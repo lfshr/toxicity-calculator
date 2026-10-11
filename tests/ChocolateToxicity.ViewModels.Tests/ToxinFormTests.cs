@@ -23,54 +23,34 @@ public class ToxinFormTests
     }
 
     [Fact]
-    public async Task Grapes_result()
-    {
-        var form = new GrapesViewModel(_navigation)
-        {
-            DogWeightKg = "10",
-            SelectedForm = GrapeFormOption.For(GrapeForm.Dried),
-            AmountEatenGrams = "30",
-        };
-
-        await form.CalculateCommand.ExecuteAsync(null);
-
-        var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
-        Assert.Equal("3 g/kg", shown.Dose);
-        Assert.Equal("Consider inducing emesis", shown.Verdict);
-        Assert.Equal("There is no established safe dose of raisins.", shown.VerdictDetail);
-        Assert.Equal(RiskLevel.Critical, shown.Risk);
-        Assert.Equal("30 g of raisins, sultanas or currants eaten by a 10 kg dog.", shown.Summary);
-        Assert.NotNull(shown.Advice);
-    }
-
-    [Fact]
     public async Task Missing_fields_show_errors_and_no_result()
     {
-        var form = new GrapesViewModel(_navigation);
+        var form = new XylitolViewModel(_navigation);
 
         await form.CalculateCommand.ExecuteAsync(null);
 
         Assert.Null(_navigation.Shown);
         Assert.NotNull(form.DogWeightError);
-        Assert.NotNull(form.FormError);
-        Assert.NotNull(form.AmountEatenError);
+        Assert.NotNull(form.ProductEatenError);
+        Assert.NotNull(form.XylitolError);
     }
 
     [Fact]
     public async Task Invalid_weight_alone_blocks_the_result()
     {
-        var form = new GrapesViewModel(_navigation)
+        var form = new XylitolViewModel(_navigation)
         {
             DogWeightKg = "0",
-            SelectedForm = GrapeFormOption.For(GrapeForm.Grapes),
-            AmountEatenGrams = "30",
+            ProductEatenGrams = "10",
+            XylitolPer100g = "60",
         };
 
         await form.CalculateCommand.ExecuteAsync(null);
 
         Assert.Null(_navigation.Shown);
-        Assert.Null(form.FormError);
-        Assert.Null(form.AmountEatenError);
+        Assert.NotNull(form.DogWeightError);
+        Assert.Null(form.ProductEatenError);
+        Assert.Null(form.XylitolError);
     }
 
     [Fact]

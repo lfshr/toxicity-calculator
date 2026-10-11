@@ -26,8 +26,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<HomePage>();
 		builder.Services.AddTransient<CalculatorViewModel>();
 		builder.Services.AddTransient<CalculatorPage>();
-		builder.Services.AddTransient<GrapesViewModel>();
-		builder.Services.AddTransient<GrapesPage>();
 		builder.Services.AddTransient<XylitolViewModel>();
 		builder.Services.AddTransient<XylitolPage>();
 		builder.Services.AddTransient<RatBaitViewModel>();
