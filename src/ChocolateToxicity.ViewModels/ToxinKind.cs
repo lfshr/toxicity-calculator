@@ -4,7 +4,6 @@ namespace ChocolateToxicity.ViewModels;
 public enum ToxinKind
 {
     Chocolate,
-    GrapesAndRaisins,
     Xylitol,
     Ibuprofen,
     Paracetamol,
@@ -17,7 +16,6 @@ public sealed record ToxinOption(ToxinKind Kind, string Name, string Detail)
     public static IReadOnlyList<ToxinOption> All { get; } =
     [
         new(ToxinKind.Chocolate, "Chocolate", "Theobromine and caffeine, with product search"),
-        new(ToxinKind.GrapesAndRaisins, "Grapes and raisins", "Including sultanas and currants"),
         new(ToxinKind.Xylitol, "Xylitol", "Sugar-free gum, sweets, peanut butter and baking"),
         new(ToxinKind.Ibuprofen, "Ibuprofen", "Tablets, capsules or liquid"),
         new(ToxinKind.Paracetamol, "Paracetamol", "Tablets, capsules or liquid"),

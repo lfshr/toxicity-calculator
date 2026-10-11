@@ -18,6 +18,10 @@ public enum Painkiller
 /// (https://www.merckvetmanual.com/toxicology/toxicoses-from-human-analgesics/toxicoses-from-human-analgesics-in-animals):
 /// clinical signs of acute toxicosis are not seen in dogs unless the dose exceeds 100 mg/kg, and methaemoglobinaemia
 /// has been reported above 200 mg/kg; hepatotoxicity is more common in dogs than in cats.
+/// Cats: the same Merck chapter says paracetamol toxicosis in cats generally occurs at 40-50 mg/kg, with signs in some
+/// cats at 10 mg/kg, and that cats are susceptible to ibuprofen at about half the dose that causes toxicosis in dogs
+/// (Dunayer 2004: twice as sensitive). The dog thresholds therefore don't apply to cats, and there are no published
+/// cat bands to replace them, so any ingestion by a cat is treated as potentially toxic.
 /// </remarks>
 public static class Painkillers
 {
@@ -74,6 +78,66 @@ public static class Painkillers
         emesisFromDose: ParacetamolSignsMgPerKg,
         "Thresholds: clinical signs and liver injury from 100 mg/kg, methaemoglobinaemia from 200 mg/kg (Merck Veterinary Manual).",
         "Consider acetylcysteine as well as decontamination at toxic doses.");
+
+    public const double ParacetamolCatSignsMgPerKg = 10;
+    public const double ParacetamolCatToxicosisMgPerKg = 40;
+
+    /// <summary>Paracetamol in cats: no safe dose.</summary>
+    public static ToxinProfile ParacetamolInCats { get; } = new(
+        "paracetamol in cats",
+        "mg/kg",
+        new DoseBand(0, RiskLevel.High, "No safe dose in cats", "Cats lack the liver pathway that clears paracetamol safely."),
+        [
+            new DoseBand(
+                0,
+                RiskLevel.High,
+                "No safe dose in cats",
+                "Paracetamol has no safe dose in cats. Treat any ingestion."),
+            new DoseBand(
+                ParacetamolCatSignsMgPerKg,
+                RiskLevel.Critical,
+                "Clinical signs reported",
+                "From 10 mg/kg some cats show signs: methaemoglobinaemia (brown mucous membranes, cyanosis, dyspnoea), " +
+                "facial and paw oedema and Heinz body anaemia."),
+            new DoseBand(
+                ParacetamolCatToxicosisMgPerKg,
+                RiskLevel.Critical,
+                "Toxicosis expected",
+                "From 40-50 mg/kg toxicosis is generally seen: methaemoglobinaemia, Heinz body anaemia, facial and paw oedema."),
+        ],
+        emesisFromDose: 0,
+        "Cats: no safe dose; signs reported from 10 mg/kg and toxicosis generally from 40-50 mg/kg (Merck Veterinary Manual). " +
+        "The dog thresholds don't apply.",
+        "Treat any ingestion: decontaminate, and consider acetylcysteine without waiting for signs.");
+
+    /// <summary>Ibuprofen in cats: about twice as sensitive as dogs, with no published cat bands.</summary>
+    public static ToxinProfile IbuprofenInCats { get; } = new(
+        "ibuprofen in cats",
+        "mg/kg",
+        new DoseBand(0, RiskLevel.High, "Dog thresholds don't apply", "Cats are about twice as sensitive to ibuprofen as dogs."),
+        [
+            new DoseBand(
+                0,
+                RiskLevel.High,
+                "Dog thresholds don't apply",
+                "Cats are about twice as sensitive to ibuprofen as dogs (Merck; Dunayer 2004), and there are no published " +
+                "cat thresholds. Treat any ingestion as potentially toxic and check a feline reference or a poisons service."),
+        ],
+        emesisFromDose: 0,
+        "Cats are susceptible at about half the dose that causes toxicosis in dogs (Merck Veterinary Manual; Dunayer 2004), " +
+        "so the dog thresholds (GI signs from 25 mg/kg) don't apply.",
+        "Consider gastroprotection and kidney monitoring as well as decontamination.");
+
+    /// <summary>The thresholds for a drug in a cat, which replace the dog thresholds rather than adjusting them.</summary>
+    public static ToxinProfile ForCat(Painkiller drug) => drug switch
+    {
+        Painkiller.Ibuprofen => IbuprofenInCats,
+        Painkiller.Paracetamol => ParacetamolInCats,
+        _ => throw new ArgumentOutOfRangeException(nameof(drug), drug, "Unknown painkiller."),
+    };
+
+    public static ToxinAssessment AssessCat(Painkiller drug, double totalMg, double catWeightKg) =>
+        ForCat(drug).Assess(Dose.PerKg(totalMg, catWeightKg));
 
     public static ToxinProfile For(Painkiller drug) => drug switch
     {

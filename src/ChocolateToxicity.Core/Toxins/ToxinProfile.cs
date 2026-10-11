@@ -59,8 +59,10 @@ public sealed class ToxinProfile
             throw new ArgumentOutOfRangeException(nameof(dosePerKg), dosePerKg, "Dose cannot be negative.");
         }
 
-        var band = Bands.LastOrDefault(b => dosePerKg >= b.FromDose) ?? BelowThresholds;
-        var emesis = dosePerKg > 0 && dosePerKg >= EmesisFromDose;
+        // Compared at the precision the dose is shown at, so the verdict always agrees with the number on screen.
+        var shown = DisplayedDose.Round(dosePerKg);
+        var band = Bands.LastOrDefault(b => shown >= b.FromDose) ?? BelowThresholds;
+        var emesis = dosePerKg > 0 && shown >= EmesisFromDose;
         return new ToxinAssessment(this, dosePerKg, band, emesis);
     }
 }

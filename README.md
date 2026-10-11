@@ -1,7 +1,7 @@
 # Toxicity Calculator
 
 A calculator for veterinary surgeons that estimates the dose of a toxin a dog has eaten, and whether inducing emesis
-should be considered. It covers chocolate, grapes and raisins, xylitol, ibuprofen, paracetamol and rat and mouse bait.
+should be considered. It covers chocolate, xylitol, ibuprofen, paracetamol and rat and mouse bait.
 
 
 It comes as an Android app and as a web app. The web app adds clinical calculators for dogs and cats: emetics and
@@ -97,8 +97,13 @@ disclaimer. Numbers can be typed with either a full stop or the device's decimal
 ### Product search
 
 "Search products" looks the product up on [Open Food Facts](https://world.openfoodfacts.org), a free, open
-product database. Search goes to Open Food Facts' Search-a-licious service, falling back to its older search if
-that fails, and the chosen product's full record is then fetched for its cocoa data. The chocolate is filled in from:
+product database, limited to cocoa products so "Dairy Milk" finds the chocolate rather than milk. The Android app
+searches Open Food Facts' Search-a-licious service first; the web app can't, because that service doesn't allow
+requests from other websites (no CORS headers), so it goes straight to the older search. The older search is often
+busy and answers 503, so it is tried three times a few seconds apart, and if it is still busy the query is looked up
+as a brand instead ("Lindt 70" as Lindt bars, listing those with 70 in the name first). The chosen product's full
+record is then fetched for its cocoa data. The "Live product search" workflow runs real searches in a browser
+against the live service; run it from the Actions tab. The chocolate is filled in from:
 
 1. The cocoa percentage recorded from the label (Open Food Facts' "cocoa" nutriment), if there is one.
 2. Otherwise a percentage in the product name, such as "Excellence 70% Cacao", but only when the name or category
@@ -128,19 +133,21 @@ The chocolate's content comes from either a chocolate type or the cocoa percenta
 |---|---|---|
 | White | 0.04 | Merck |
 | Milk | 2.3 | Merck |
-| Mild dark (semisweet, 35-50%) | 5.6 | Merck, upper value of 5.3-5.6 |
-| Strong dark (over 50%) | 10.1 | Cocoa % curve at an assumed 70% |
+| Mild dark (semisweet, 35-50%) | 6.5 | Cocoa % curve at 50%, the top of the band (Merck semisweet is 5.3-5.6) |
+| Dark over 50%, % unknown | 10.1 | Cocoa % curve at an assumed 70% |
 | Baking (unsweetened) | 15.5 | Merck |
 | Cocoa powder | 28.5 | Merck |
 | Cocoa bean hulls (mulch) | 9.0 | Merck |
 
 Merck gives combined theobromine and caffeine content. Where it gives a range, the upper value is used so the
-calculator errs towards treating. For strong dark chocolate above about 70%, enter the cocoa percentage instead.
+calculator errs towards treating. Dark chocolate over 50% with no known percentage is worked out at 70%, and the
+picker says so; for a darker bar, enter the cocoa percentage instead (an 85% bar gives 12.8 mg/g).
 
 ### From a cocoa percentage
 
-Content is interpolated linearly between these points: 0% gives 0 mg/g, 30% (typical milk chocolate) gives 2.3,
-45% (the bottom of Vets Now's 45-59% lower-grade dark band) gives 5.6, and 100% (unsweetened baking chocolate)
+Content is interpolated linearly between these points: 0% gives 0 mg/g, 20% gives 2.3 (the Merck milk chocolate
+figure, placed at the lowest cocoa content UK and EU rules allow for milk chocolate, so every milk bar gets at least
+2.3), 45% (the bottom of Vets Now's 45-59% lower-grade dark band) gives 5.6, and 100% (unsweetened baking chocolate)
 gives 15.5. This deliberately overestimates for most bars, because cocoa butter dilutes theobromine and the
 percentage on a label counts it. It is not valid for cocoa powder, which is defatted and far stronger per gram.
 
@@ -159,12 +166,6 @@ Emesis is flagged for consideration from 20 mg/kg. Time since ingestion and the 
 
 Each toxin's dose is the amount eaten divided by the dog's weight, then compared with published dog thresholds.
 Emesis is flagged from the first threshold that calls for treatment.
-
-### Grapes and raisins
-
-Dose in g/kg of fruit. There is no established safe dose, so emesis is flagged for any amount. The result also says
-whether the dose reaches the lowest reported doses to cause acute kidney injury: 19.6 g/kg for grapes and 2.8 g/kg
-for raisins, sultanas and (Zante) currants.
 
 ### Xylitol
 
@@ -205,7 +206,7 @@ the toxic dose if that is lower.
 |---|---|---|---|
 | Brodifacoum | 0.005% | 0.2 | 0.02 |
 | Bromadiolone | 0.005% | 11 | 1.1 |
-| Difenacoum | 0.005% | 50 | 5 |
+| Difenacoum | 0.005% | Not verified: assessed as flocoumafen, 0.075 | 0.0075 |
 | Difethialone | 0.0025% | 4 | 0.4 |
 | Flocoumafen | 0.005% | 0.075 | 0.0075 |
 | Diphacinone | 0.005% | 0.9 | 0.09 |
@@ -237,14 +238,13 @@ The toxin calculators use dog thresholds; the web app warns when the patient is 
 ## Sources
 
 - Merck Veterinary Manual, [Chocolate Toxicosis in Animals](https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals): methylxanthine content per type and the 20, 40-50 and 60 mg/kg thresholds.
-- Merck Veterinary Manual, [Grape, Raisin, and Tamarind Toxicosis in Dogs](https://www.merckvetmanual.com/toxicology/food-hazards/raisins-and-grapes): no safe dose, prompt decontamination, which currants are implicated.
-- Vet Times, [Canine grape toxicosis](https://www.vettimes.com/news/vets/small-animal-vets/canine-grape-toxicosis): lowest reported doses causing kidney injury.
 - Merck Veterinary Manual, [Xylitol Toxicosis in Dogs](https://www.merckvetmanual.com/toxicology/food-hazards/xylitol-toxicosis-in-dogs): 100 and 500 mg/kg thresholds.
 - Dunayer, [Ibuprofen toxicosis in dogs, cats, and ferrets](https://www.dvm360.com/view/toxciology-brief-ibuprofen-toxicosis-dogs-cats-and-ferrets), Veterinary Medicine 2004: ibuprofen thresholds from ASPCA Animal Poison Control Center data.
 - Merck Veterinary Manual, [Toxicoses From Human Analgesics in Animals](https://www.merckvetmanual.com/toxicology/toxicoses-from-human-analgesics/toxicoses-from-human-analgesics-in-animals): ibuprofen and paracetamol thresholds in dogs.
 - Merck Veterinary Manual, [Anticoagulant Rodenticide Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/anticoagulant-rodenticide-poisoning-in-animals): toxic dose as one-tenth of the lowest LD50, decontamination and vitamin K1.
 - Merola, [Anticoagulant rodenticides: Deadly for pests, dangerous for pets](https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), Veterinary Medicine 2002: dog LD50s, bait concentrations and the 0.02 mg/kg decontamination threshold.
-- Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. Difenacoum dog LD50 from Bull, Proc. Vertebr. Pest Conf. 7, 72 (1976).
+- Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. No verifiable dog LD50 was found for difenacoum (the 50 mg/kg sometimes quoted couldn't be
+  traced to a primary source), so it is assessed like an unknown anticoagulant.
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
 - [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf): CPR drug doses, concentrations and defibrillation energies.
 - VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC.

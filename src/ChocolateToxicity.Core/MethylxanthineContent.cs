@@ -32,8 +32,16 @@ public static class MethylxanthineContent
     /// <summary>Cocoa percentage assumed for <see cref="ChocolateType.StrongDark"/> when the real figure is unknown.</summary>
     public const double StrongDarkAssumedCocoaPercent = 70.0;
 
+    /// <summary>
+    /// Cocoa percentage used for <see cref="ChocolateType.MildDark"/> (35-50% cocoa): the top of the band, so a bar
+    /// picked by type never gets less than the same bar entered by its cocoa percentage.
+    /// </summary>
+    public const double MildDarkAssumedCocoaPercent = 50.0;
+
     // Anchor points (cocoa %, mg/g) for estimating content from a cocoa percentage.
-    // 30% is typical of milk chocolate and 100% is unsweetened baking chocolate. The semisweet/sweet dark figure
+    // The milk chocolate figure is placed at 20%, the lowest cocoa content UK and EU rules allow for (family) milk
+    // chocolate, so every milk bar gets at least the Merck milk chocolate content; UK bars are often labelled 20-30%.
+    // 100% is unsweetened baking chocolate. The semisweet/sweet dark figure
     // is placed at 45%, the bottom of the 45-59% band Vets Now quotes for lower-grade dark chocolate, so every bar
     // in that band gets at least the Merck semisweet content. Content between anchors is linearly interpolated.
     // Check: at 70% this gives 10.1 mg/g, above the Vets Now figure of up to 8 mg/g theobromine
@@ -41,7 +49,7 @@ public static class MethylxanthineContent
     private static readonly (double CocoaPercent, double MgPerGram)[] CocoaCurve =
     [
         (0.0, 0.0),
-        (30.0, Milk),
+        (20.0, Milk),
         (45.0, MildDark),
         (100.0, Baking),
     ];
@@ -51,7 +59,7 @@ public static class MethylxanthineContent
     {
         ChocolateType.White => White,
         ChocolateType.Milk => Milk,
-        ChocolateType.MildDark => MildDark,
+        ChocolateType.MildDark => ForCocoaPercent(MildDarkAssumedCocoaPercent),
         ChocolateType.StrongDark => ForCocoaPercent(StrongDarkAssumedCocoaPercent),
         ChocolateType.Baking => Baking,
         ChocolateType.CocoaPowder => CocoaPowder,

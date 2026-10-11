@@ -1,4 +1,5 @@
 using System.Globalization;
+using ChocolateToxicity.Core;
 
 namespace ChocolateToxicity.ViewModels;
 
@@ -38,12 +39,5 @@ internal static class NumberInput
     /// Like <see cref="Format"/>, but keeps enough decimal places for small values such as rat bait doses,
     /// so "0.0125 mg/kg" rather than "0 mg/kg".
     /// </summary>
-    public static string FormatPrecise(double value) => value switch
-    {
-        0 => "0",
-        >= 10 => value.ToString("0.#", CultureInfo.CurrentCulture),
-        >= 1 => value.ToString("0.##", CultureInfo.CurrentCulture),
-        >= 0.01 => value.ToString("0.###", CultureInfo.CurrentCulture),
-        _ => value.ToString("0.#####", CultureInfo.CurrentCulture),
-    };
+    public static string FormatPrecise(double value) => DisplayedDose.Format(value);
 }

@@ -14,7 +14,8 @@ public static class ToxicityThresholds
     public const double SevereMgPerKg = 40.0;
     public const double SeizuresMgPerKg = 60.0;
 
-    public static SeverityBand BandFor(double doseMgPerKg) => doseMgPerKg switch
+    /// <summary>The band for a dose, compared at the precision it is displayed at (see <see cref="DisplayedDose"/>).</summary>
+    public static SeverityBand BandFor(double doseMgPerKg) => DisplayedDose.Round(doseMgPerKg) switch
     {
         >= SeizuresMgPerKg => SeverityBand.Seizures,
         >= SevereMgPerKg => SeverityBand.Severe,

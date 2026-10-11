@@ -1,3 +1,4 @@
+using ChocolateToxicity.Clinical;
 using ChocolateToxicity.ViewModels;
 
 namespace ChocolateToxicity.Web.Components;
@@ -8,6 +9,7 @@ public abstract class ToxinPage<TViewModel> : ViewModelPage<TViewModel>
 {
     protected override void PullWeightFromPatient()
     {
+        Vm.PatientIsCat = Patient.Species == Species.Cat;
         if (Patient.WeightText.Length > 0)
         {
             Vm.DogWeightKg = Patient.WeightText;

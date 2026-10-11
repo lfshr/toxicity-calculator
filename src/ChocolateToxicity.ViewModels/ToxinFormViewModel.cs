@@ -16,6 +16,15 @@ public abstract partial class ToxinFormViewModel(INavigationService navigation) 
     public partial string? DogWeightError { get; set; }
 
     /// <summary>
+    /// True when the patient is a cat. Forms whose dog thresholds don't hold for cats use cat guidance instead; the
+    /// Android app is for dogs only and leaves this false.
+    /// </summary>
+    public bool PatientIsCat { get; set; }
+
+    /// <summary>"dog" or "cat", for summaries such as "eaten by a 4 kg cat".</summary>
+    protected string PatientNoun => PatientIsCat ? "cat" : "dog";
+
+    /// <summary>
     /// Validates the form's own fields, setting their error messages, and builds the result.
     /// Returns null when a field is invalid or <paramref name="dogWeightKg"/> is null (the weight was invalid).
     /// </summary>

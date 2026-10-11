@@ -5,7 +5,10 @@
 <PageTitle>Xylitol - Vet Calculator</PageTitle>
 
 <PageHeader Title="Xylitol" Intro="Estimate the xylitol dose a dog has eaten, and whether to consider inducing emesis." />
-<DogOnlyNotice />
+<DogOnlyNotice>
+    <strong>Cat selected.</strong> The Merck Veterinary Manual says cats are not at risk of xylitol hypoglycaemia or liver
+    injury. These thresholds are for dogs.
+</DogOnlyNotice>
 
 <form class="calc-form" @onsubmit="() => Vm.CalculateCommand.ExecuteAsync(null)" @onsubmit:preventDefault>
     <Field Label="Dog's weight" For="weight" Error="@Vm.DogWeightError">

@@ -45,7 +45,7 @@
 @code {
     private string lbText = "", kgText = "", fText = "", cText = "", percentText = "", mgMlText = "";
 
-    private void OnLb(string v) { lbText = v; kgText = Parse(v) is { } x ? F(UnitConversion.LbToKg(x)) : ""; }
+    private void OnLb(string v) { lbText = v; kgText = Parse(v) is { } x ? UnitConversion.LbToKg(x).ToString("0.##", CultureInfo.CurrentCulture) : ""; }
     private void OnKg(string v) { kgText = v; lbText = Parse(v) is { } x ? F(UnitConversion.KgToLb(x)) : ""; }
     private void OnF(string v) { fText = v; cText = Parse(v) is { } x ? UnitConversion.FahrenheitToCelsius(x).ToString("0.#", CultureInfo.CurrentCulture) : ""; }
     private void OnC(string v) { cText = v; fText = Parse(v) is { } x ? UnitConversion.CelsiusToFahrenheit(x).ToString("0.#", CultureInfo.CurrentCulture) : ""; }

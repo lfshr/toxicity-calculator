@@ -3,7 +3,7 @@ import { open, setPatient, stubOpenFoodFacts } from './helpers.mjs';
 
 test('home lists every calculator', async ({ page }) => {
   await open(page);
-  for (const name of ['Chocolate', 'Grapes and raisins', 'Xylitol', 'Ibuprofen', 'Paracetamol', 'Rat and mouse bait',
+  for (const name of ['Chocolate', 'Xylitol', 'Ibuprofen', 'Paracetamol', 'Rat and mouse bait',
     'Emetics and charcoal', 'CPR drugs', 'Drug dose', 'Constant rate infusion', 'Fluid therapy', 'Blood transfusion',
     'Body surface area and calories', 'Unit converter']) {
     await expect(page.locator('.calc-card strong', { hasText: new RegExp(`^${name}$`) })).toBeVisible();
@@ -66,15 +66,20 @@ test('chocolate: product search fills in cocoa and pack weight', async ({ page }
   await expect(page.locator('.verdict')).toHaveClass(/risk-critical/);
 });
 
-test('grapes: any amount is a treatment case', async ({ page }) => {
-  await open(page, 'toxins/grapes');
-  await page.locator('#weight').fill('20');
-  await page.locator('#form').selectOption('Dried');
-  await page.locator('#amount').fill('14');
-  await page.getByRole('button', { name: 'Calculate' }).click();
+test('chocolate: product search looks the brand up when full-text search is busy', async ({ page }) => {
+  const requests = await stubOpenFoodFacts(page);
+  // Open Food Facts' busy page has no CORS headers, so the browser reports a failed request.
+  await page.route('https://world.openfoodfacts.org/cgi/search.pl**', route => route.abort('failed'));
+  await open(page, 'toxins/chocolate');
+  await page.getByRole('button', { name: 'Search products' }).click();
 
-  await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
-  await expect(page.locator('#dose')).toHaveText('0.7 g/kg');
+  await page.getByLabel('Product name').fill('lindt 70');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+
+  // Three tries a few seconds apart, then the brand lookup.
+  await expect(page.locator('.result')).toHaveCount(2, { timeout: 15_000 });
+  expect(requests.filter(url => url.includes('/cgi/search.pl'))).toHaveLength(3);
+  expect(requests.filter(url => url.includes('/api/v2/search?brands_tags=lindt-70%7Clindt'))).toHaveLength(1);
 });
 
 test('xylitol from a known amount', async ({ page }) => {
@@ -128,6 +133,26 @@ test('cats get a warning on dog-only toxin thresholds', async ({ page }) => {
   await open(page, 'toxins/chocolate');
   await setPatient(page, '4', 'Cat');
   await expect(page.getByText('These thresholds are for dogs.')).toBeVisible();
+});
+
+test('paracetamol in a cat uses cat guidance, not the dog thresholds', async ({ page }) => {
+  await open(page, 'toxins/paracetamol');
+  await setPatient(page, '4', 'Cat');
+  await expect(page.getByText('Paracetamol has no safe dose in cats')).toBeVisible();
+  await page.locator('#count').fill('0.25');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  // A quarter of a 500 mg tablet is 31.3 mg/kg: below the dog threshold, but toxic in a cat.
+  await expect(page.locator('#dose')).toHaveText('31.3 mg/kg');
+  await expect(page.locator('.verdict')).toContainText('Consider inducing emesis');
+  await expect(page.locator('.verdict')).toContainText('no established safe dose of paracetamol in cats');
+  await expect(page.getByText('Emesis not indicated')).toHaveCount(0);
+});
+
+test('xylitol in a cat says cats are not at risk', async ({ page }) => {
+  await open(page, 'toxins/xylitol');
+  await setPatient(page, '4', 'Cat');
+  await expect(page.getByText('cats are not at risk of xylitol hypoglycaemia or liver')).toBeVisible();
 });
 
 test('a result opened directly goes home', async ({ page }) => {

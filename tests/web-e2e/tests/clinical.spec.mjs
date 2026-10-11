@@ -27,9 +27,22 @@ test('CPR drugs for a 10 kg dog, with an editable concentration', async ({ page 
   await expect(atropine.locator('.volume')).toHaveText('0.926 mL');
   await atropine.getByLabel('Atropine concentration').fill('0.6');
   await expect(atropine.locator('.volume')).toHaveText('0.833 mL');
-  await expect(page.locator('#defib')).toHaveText('External: 20-40 J');
+  // RECOVER 2024: lidocaine first in dogs, amiodarone if lidocaine is unavailable.
+  await expect(page.locator('#cpr-table td strong').filter({ hasText: /^(Lidocaine|Amiodarone)$/ })).toHaveText(['Lidocaine', 'Amiodarone']);
+  await expect(page.locator('#defib')).toHaveText('External: first shock 20 J, later shocks 40 J');
+  await expect(page.getByText('RECOVER 2024 doubles the energy once, to 4 J/kg')).toBeVisible();
+  await expect(page.getByText('50%')).toHaveCount(0);
   await page.getByRole('radio', { name: 'Monophasic' }).click();
-  await expect(page.locator('#defib')).toHaveText('External: 40-60 J');
+  await expect(page.locator('#defib')).toHaveText('External: first shock 40 J, later shocks 60 J');
+});
+
+test('CPR drugs for a cat leave out lidocaine', async ({ page }) => {
+  await open(page, 'emergency');
+  await setPatient(page, '4', 'Cat');
+
+  await expect(page.locator('#cpr-table td strong', { hasText: 'Lidocaine' })).toHaveCount(0);
+  await expect(page.locator('#cpr-table')).toContainText('preferred in cats');
+  await expect(page.locator('#lidocaine-cat')).toBeVisible();
 });
 
 test('drug dose to mL and tablets', async ({ page }) => {

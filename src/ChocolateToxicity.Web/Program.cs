@@ -18,7 +18,6 @@ builder.Services.AddScoped<INavigationService>(sp => sp.GetRequiredService<WebNa
 
 // One instance of each form for the app's lifetime, so going to a result and back keeps what was typed.
 builder.Services.AddScoped<CalculatorViewModel>();
-builder.Services.AddScoped<GrapesViewModel>();
 builder.Services.AddScoped<XylitolViewModel>();
 builder.Services.AddScoped<RatBaitViewModel>();
 builder.Services.AddKeyedScoped(Painkiller.Ibuprofen, (sp, _) => new PainkillerViewModel(sp.GetRequiredService<INavigationService>(), Painkiller.Ibuprofen));

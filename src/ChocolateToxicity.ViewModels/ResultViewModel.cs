@@ -17,12 +17,13 @@ public sealed class ResultViewModel
         VerdictDetail = result.EmesisIndicated
             ? "The dose is at or above the 20 mg/kg threshold for clinical signs."
             : "The dose is below the 20 mg/kg threshold for clinical signs.";
-        Dose = $"{Format(result.DoseMgPerKg)} mg/kg";
+        Dose = $"{NumberInput.FormatPrecise(result.DoseMgPerKg)} mg/kg";
         BandTitle = ClinicalText.BandTitle(result.Band);
         ExpectedSigns = ClinicalText.ExpectedSigns(result.Band);
         Summary = $"{Format(amountEatenGrams)} g of {chocolateDescription} eaten by a {Format(dogWeightKg)} kg dog.";
         Working =
-            $"{Format(result.MethylxanthineMgPerGram)} mg/g x {Format(amountEatenGrams)} g = {Format(result.TotalMethylxanthineMg)} mg " +
+            $"{NumberInput.FormatPrecise(result.MethylxanthineMgPerGram)} mg/g x {Format(amountEatenGrams)} g = " +
+            $"{NumberInput.FormatPrecise(result.TotalMethylxanthineMg)} mg " +
             $"theobromine and caffeine, divided by {Format(dogWeightKg)} kg.";
         ThresholdsText = "Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg.";
         Disclaimer = ClinicalText.Disclaimer;

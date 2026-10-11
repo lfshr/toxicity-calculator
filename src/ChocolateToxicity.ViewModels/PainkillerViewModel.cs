@@ -59,9 +59,10 @@ public partial class PainkillerViewModel : ToxinFormViewModel
         }
 
         var totalMg = strength!.Value * count.Value;
+        // Cats are far more sensitive to both drugs, so the dog thresholds are replaced rather than applied.
         return new ResultViewModel(
-            Painkillers.Assess(Drug, totalMg, weight),
-            $"{Format(count.Value)} x {Format(strength.Value)} mg {DrugName} eaten by a {Format(weight)} kg dog.",
+            PatientIsCat ? Painkillers.AssessCat(Drug, totalMg, weight) : Painkillers.Assess(Drug, totalMg, weight),
+            $"{Format(count.Value)} x {Format(strength.Value)} mg {DrugName} eaten by a {Format(weight)} kg {PatientNoun}.",
             $"{Format(strength.Value)} mg x {Format(count.Value)} = {Format(totalMg)} mg {DrugName}, divided by {Format(weight)} kg.");
     }
 
