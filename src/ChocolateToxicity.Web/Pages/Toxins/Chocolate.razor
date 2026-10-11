@@ -24,7 +24,7 @@
         @if (Vm.UseCocoaPercent)
         {
             <Field Label="Cocoa percentage" For="cocoa" Error="@Vm.ChocolateError"
-                   Hint="Not for cocoa powder, which is far stronger per gram: choose it by type instead.">
+                   Hint="Not for cocoa powder, which is far stronger per gram, or white chocolate: choose those by type instead.">
                 <NumberInput Id="cocoa" Value="@Vm.CocoaPercent" ValueChanged="v => Vm.CocoaPercent = v" Unit="%" Placeholder="e.g. 70" Invalid="@(Vm.ChocolateError is not null)" />
             </Field>
         }
@@ -69,6 +69,7 @@
 
     protected override void PullWeightFromPatient()
     {
+        Vm.PatientIsCat = Patient.Species == Species.Cat;
         if (Patient.WeightText.Length > 0)
         {
             Vm.DogWeightKg = Patient.WeightText;

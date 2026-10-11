@@ -56,7 +56,7 @@ public static class Painkillers
         ],
         emesisFromDose: IbuprofenGiMgPerKg,
         "Thresholds: GI signs from 25 mg/kg, kidney injury from 175 mg/kg, CNS signs from 400 mg/kg, minimum lethal dose about 600 mg/kg " +
-        "(ASPCA Animal Poison Control Center data; Merck Veterinary Manual).",
+        "(GI threshold: Dunayer 2004, ASPCA Animal Poison Control Center data; higher thresholds: Merck Veterinary Manual).",
         "Consider gastroprotection as well as decontamination, and kidney monitoring from 175 mg/kg.");
 
     public static ToxinProfile Paracetamol { get; } = new(

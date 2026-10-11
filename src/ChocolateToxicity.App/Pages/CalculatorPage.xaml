@@ -62,7 +62,7 @@
                            Placeholder="e.g. 70"
                            Keyboard="Numeric"
                            AutomationId="CocoaPercentEntry" />
-                    <Label Text="For cocoa powder, choose Cocoa powder under Chocolate type instead: it is far stronger than a bar with the same percentage."
+                    <Label Text="For cocoa powder or white chocolate, choose it under Chocolate type instead: a percentage misstates both."
                            Style="{StaticResource HintLabel}" />
                 </VerticalStackLayout>
 

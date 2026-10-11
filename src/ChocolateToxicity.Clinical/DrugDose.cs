@@ -40,4 +40,29 @@ public static class DrugDose
 
         return Math.Round(tablets * splitInto, MidpointRounding.AwayFromZero) / splitInto;
     }
+
+    /// <summary>
+    /// A warning when rounding to a whole portion changes the dose by more than <paramref name="tolerance"/>
+    /// (10% by default), such as 0.25 tablets rounding to a half (+100%) or 0.24 rounding to none; otherwise null.
+    /// </summary>
+    public static string? SplitWarning(double exactTablets, double roundedTablets, double tolerance = 0.1)
+    {
+        if (exactTablets <= 0)
+        {
+            return null;
+        }
+
+        if (roundedTablets == 0)
+        {
+            return "The dose is less than the smallest portion: consider a lower strength or a liquid.";
+        }
+
+        var change = (roundedTablets - exactTablets) / exactTablets;
+        if (Math.Abs(change) <= tolerance)
+        {
+            return null;
+        }
+
+        return $"Rounding changes the dose by {(change > 0 ? "+" : "")}{change * 100:0}%: consider a finer split, another strength or a liquid.";
+    }
 }

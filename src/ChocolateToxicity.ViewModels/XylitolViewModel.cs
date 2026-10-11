@@ -67,7 +67,7 @@ public partial class XylitolViewModel(INavigationService navigation) : ToxinForm
 
         return new ResultViewModel(
             Xylitol.Assess(xylitolMg.Value, weight),
-            $"{summary}, eaten by a {Format(weight)} kg dog.",
+            $"{summary}, eaten by a {Format(weight)} kg {PatientNoun}.",
             $"{working}, divided by {Format(weight)} kg.");
     }
 

@@ -7,7 +7,8 @@ namespace ChocolateToxicity.ViewModels;
 public sealed class ResultViewModel
 {
     /// <summary>A chocolate result.</summary>
-    public ResultViewModel(ToxicityResult result, double dogWeightKg, double amountEatenGrams, string chocolateDescription)
+    /// <param name="patientNoun">"dog" or "cat", for the summary.</param>
+    public ResultViewModel(ToxicityResult result, double dogWeightKg, double amountEatenGrams, string chocolateDescription, string patientNoun = "dog")
     {
         Result = result;
         Band = result.Band;
@@ -20,12 +21,12 @@ public sealed class ResultViewModel
         Dose = $"{NumberInput.FormatPrecise(result.DoseMgPerKg)} mg/kg";
         BandTitle = ClinicalText.BandTitle(result.Band);
         ExpectedSigns = ClinicalText.ExpectedSigns(result.Band);
-        Summary = $"{Format(amountEatenGrams)} g of {chocolateDescription} eaten by a {Format(dogWeightKg)} kg dog.";
+        Summary = $"{Format(amountEatenGrams)} g of {chocolateDescription} eaten by a {Format(dogWeightKg)} kg {patientNoun}.";
         Working =
             $"{NumberInput.FormatPrecise(result.MethylxanthineMgPerGram)} mg/g x {Format(amountEatenGrams)} g = " +
             $"{NumberInput.FormatPrecise(result.TotalMethylxanthineMg)} mg " +
             $"theobromine and caffeine, divided by {Format(dogWeightKg)} kg.";
-        ThresholdsText = "Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg.";
+        ThresholdsText = "Thresholds: mild signs from 20 mg/kg, severe (cardiotoxic) from 40 mg/kg, seizures from 60 mg/kg, potentially lethal from 100 mg/kg (Merck).";
         Disclaimer = ClinicalText.Disclaimer;
     }
 
@@ -100,5 +101,5 @@ public sealed class ResultViewModel
         _ => RiskLevel.Low,
     };
 
-    private static string Format(double value) => NumberInput.Format(value);
+    private static string Format(double value) => NumberInput.FormatInput(value);
 }

@@ -43,6 +43,9 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
     // Limits search to chocolate, cocoa powder and other cocoa products, so "dairy milk" finds the chocolate bar
     // rather than milk.
     private const string CocoaCategory = "en:cocoa-and-its-products";
+    // Below this, a percentage in a dark chocolate's name is not its cocoa content.
+    private const double DarkChocolateMinimumCocoaPercent = 45;
+
     private const int LegacySearchAttempts = 3;
     private const int BrandSearchAttempts = 2;
     private const string Fields =
@@ -261,10 +264,11 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
 
         var brand = GetText(product, "brands")?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         var categories = GetCategories(product);
-        var suggestedType = SuggestType(categories);
+        var suggestedType = SuggestType(name, categories);
 
         double? cocoa = null;
         CocoaPercentSource? source = null;
+        string? caution = null;
 
         // Powder and white chocolate always go by type. A percentage understates defatted cocoa powder, and
         // white chocolate's cocoa content is cocoa butter, which carries almost no theobromine.
@@ -278,6 +282,14 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
             {
                 (cocoa, source) = (nameCocoa, CocoaPercentSource.ProductName);
             }
+
+            // 100% cocoa is either an unsweetened bar (15.5 mg/g) or cocoa powder (28.5 mg/g), and the record
+            // doesn't say which, so the vet chooses rather than the app assuming the weaker one.
+            if (cocoa >= 100)
+            {
+                (cocoa, source, suggestedType) = (null, null, null);
+                caution = "100% cocoa: choose Unsweetened baking chocolate for a bar, or Cocoa powder for a powder.";
+            }
         }
 
         return new ChocolateProduct(
@@ -289,7 +301,8 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
             CocoaPercent: cocoa,
             CocoaPercentSource: source,
             SuggestedType: suggestedType,
-            ImageUrl: GetImageUrl(product));
+            ImageUrl: GetImageUrl(product),
+            Caution: caution);
     }
 
     private static string? GetImageUrl(JsonElement product)
@@ -307,9 +320,12 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
         return null;
     }
 
-    private static ChocolateType? SuggestType(IReadOnlyCollection<string> categories)
+    private static ChocolateType? SuggestType(string name, IReadOnlyCollection<string> categories)
     {
-        if (categories.Contains("en:cocoa-powders") || categories.Any(c => c.Contains("unsweetened-cocoa-powder", StringComparison.Ordinal)))
+        // Not every powder carries the powder category, so a name or category that says cocoa powder counts too.
+        if (categories.Contains("en:cocoa-powders") ||
+            categories.Any(c => CocoaPowderWords().IsMatch(c)) ||
+            CocoaPowderWords().IsMatch(name))
         {
             return ChocolateType.CocoaPowder;
         }
@@ -353,24 +369,41 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
     }
 
     // Names like "Excellence 70% Cocoa" or "Noir 85%". Only trusted when the name or category says it is
-    // a cocoa figure, so "30% less sugar" on a milk bar is not read as cocoa.
+    // a cocoa figure, so "30% less sugar" on a milk bar is not read as cocoa. A percentage next to a cocoa word
+    // ("70% cocoa", "cacao 85%") wins over the first one, so "Noir 70% aux noisettes 15%" gives 70.
     private static double? GetCocoaFromName(string name, IReadOnlyCollection<string> categories)
     {
-        var match = PercentInName().Match(name);
-        if (!match.Success)
+        // Where more than one percentage sits next to a cocoa word, the highest errs towards treating.
+        double? value = PercentNextToCocoaWord().Matches(name)
+            .Select(m => (double?)ParsePercent((m.Groups["before"].Success ? m.Groups["before"] : m.Groups["after"]).Value))
+            .Max();
+        if (value is null)
+        {
+            var first = PercentInName().Match(name);
+            if (!first.Success || !(CocoaWord().IsMatch(name) || categories.Contains("en:dark-chocolates")))
+            {
+                return null;
+            }
+
+            value = ParsePercent(first.Groups[1].Value);
+        }
+
+        if (value is < 20 or > 100)
         {
             return null;
         }
 
-        var looksLikeCocoa = CocoaWord().IsMatch(name) || categories.Contains("en:dark-chocolates");
-        if (!looksLikeCocoa)
+        // Dark chocolate is at least 45% cocoa in practice, so a lower figure in a dark bar's name is something
+        // else, such as "with 20% hazelnuts" or "30% less sugar". The dark type (70% assumed) is used instead.
+        if (categories.Contains("en:dark-chocolates") && value < DarkChocolateMinimumCocoaPercent)
         {
             return null;
         }
 
-        var value = double.Parse(match.Groups[1].Value.Replace(',', '.'), CultureInfo.InvariantCulture);
-        return value is >= 20 and <= 100 ? value : null;
+        return value;
     }
+
+    private static double ParsePercent(string text) => double.Parse(text.Replace(',', '.'), CultureInfo.InvariantCulture);
 
     private static double? GetPackWeightGrams(JsonElement product)
     {
@@ -459,4 +492,19 @@ public sealed partial class OpenFoodFactsProductSearch(HttpClient httpClient, bo
 
     [GeneratedRegex(@"cocoa|cacao|cacau|kakao|dark|noir|bitter|fondente|negro|puur", RegexOptions.IgnoreCase)]
     private static partial Regex CocoaWord();
+
+    // A percentage straight after a cocoa word ("cacao 85%", "Noir 70%") or straight before one ("70% cocoa",
+    // "85 % dark"), with only spaces, colons or "de"/"di" between.
+    [GeneratedRegex(
+        @"\b(?:cocoa|cacao|cacau|kakao|dark|noir|bitter|fondente|negro|puur)\b(?:\s*(?:solids|:|de|di))?\s*(?<before>\d{1,3}(?:[.,]\d+)?)\s*%" +
+        @"|(?<after>\d{1,3}(?:[.,]\d+)?)\s*%\s*(?:de\s+|di\s+)?(?:cocoa|cacao|cacau|kakao|dark|noir|bitter|fondente|negro|puur)\b",
+        RegexOptions.IgnoreCase)]
+    private static partial Regex PercentNextToCocoaWord();
+
+    // "Cocoa powder", "cacao en poudre", "Kakaopulver", "cacaopoeder", "cacau em pó", "en:unsweetened-cocoa-powders".
+    [GeneratedRegex(
+        @"(?:cocoa|cacao|cacau|kakao)[\s-]*(?:(?:en|em|in)\s+)?(?:powder|poudre|pulver|polvo|poeder|polvere|pó\b)" +
+        @"|(?:powder|poudre|pulver|polvo|poeder|polvere)\s+(?:de\s+|di\s+)?(?:cocoa|cacao|cacau|kakao)",
+        RegexOptions.IgnoreCase)]
+    private static partial Regex CocoaPowderWords();
 }

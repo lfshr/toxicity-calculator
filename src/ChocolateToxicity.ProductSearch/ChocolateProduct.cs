@@ -25,6 +25,7 @@ public enum CocoaPercentSource
 /// (or, for cocoa powder and white chocolate, instead of one, since a percentage misstates their content).
 /// </param>
 /// <param name="ImageUrl">A small photo of the product's front, when there is one.</param>
+/// <param name="Caution">Why the vet must choose the type themselves, when the record is ambiguous.</param>
 public sealed record ChocolateProduct(
     string Barcode,
     string Name,
@@ -34,7 +35,8 @@ public sealed record ChocolateProduct(
     double? CocoaPercent,
     CocoaPercentSource? CocoaPercentSource,
     ChocolateType? SuggestedType,
-    string? ImageUrl = null)
+    string? ImageUrl = null,
+    string? Caution = null)
 {
     /// <summary>True when the product's cocoa content is known, as a percentage or a chocolate type.</summary>
     public bool HasCocoaInfo => CocoaPercent is not null || SuggestedType is not null;

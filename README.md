@@ -107,9 +107,15 @@ against the live service; run it from the Actions tab. The chocolate is filled i
 
 1. The cocoa percentage recorded from the label (Open Food Facts' "cocoa" nutriment), if there is one.
 2. Otherwise a percentage in the product name, such as "Excellence 70% Cacao", but only when the name or category
-   says it's dark chocolate or cocoa, so "30% less sugar" isn't read as cocoa.
+   says it's dark chocolate or cocoa, so "30% less sugar" isn't read as cocoa. A percentage next to a cocoa word wins
+   ("Noir 70% aux noisettes 15%" gives 70), and a figure under 45% in a dark chocolate's name ("with 20% hazelnuts")
+   is ignored in favour of the dark type.
 3. Otherwise the type its category implies: milk, white, cocoa powder, or strong dark for a dark bar with no
    percentage, which errs towards treating.
+
+A product whose name or category says cocoa powder ("cacao powder", "cacao en poudre", "Kakaopulver") goes by the
+cocoa powder type even without Open Food Facts' powder category. A product recorded as 100% cocoa could be a bar
+or a powder, so the app asks you to choose the type rather than assume the weaker one.
 
 Results whose cocoa content is unknown are left out of the list, and each result shows the product's photo when
 Open Food Facts has one.
@@ -145,9 +151,9 @@ picker says so; for a darker bar, enter the cocoa percentage instead (an 85% bar
 
 ### From a cocoa percentage
 
-Content is interpolated linearly between these points: 0% gives 0 mg/g, 20% gives 2.3 (the Merck milk chocolate
-figure, placed at the lowest cocoa content UK and EU rules allow for milk chocolate, so every milk bar gets at least
-2.3), 45% (the bottom of Vets Now's 45-59% lower-grade dark band) gives 5.6, and 100% (unsweetened baking chocolate)
+Content is interpolated linearly between these points: 0-20% gives 2.3 mg/g (the Merck milk chocolate
+figure, placed at the lowest cocoa content UK and EU rules allow for milk chocolate, and held flat below it because
+US milk chocolate can be 10%, so every bar with a stated cocoa % gets at least 2.3; white chocolate goes by type), 45% (the bottom of Vets Now's 45-59% lower-grade dark band) gives 5.6, and 100% (unsweetened baking chocolate)
 gives 15.5. This deliberately overestimates for most bars, because cocoa butter dilutes theobromine and the
 percentage on a label counts it. It is not valid for cocoa powder, which is defatted and far stronger per gram.
 
@@ -158,7 +164,7 @@ percentage on a label counts it. It is not valid for cocoa powder, which is defa
 | under 20 mg/kg | None | Methylxanthine toxicosis not expected; fat and sugar may still cause GI upset |
 | 20 mg/kg | Mild | Vomiting, diarrhoea, polydipsia |
 | 40 mg/kg | Severe | Cardiotoxic effects |
-| 60 mg/kg | Seizures | Tremors and seizures |
+| 60 mg/kg | Seizures | Tremors and seizures; potentially lethal from 100 mg/kg (Merck oral LD50 100-200 mg/kg) |
 
 Emesis is flagged for consideration from 20 mg/kg. Time since ingestion and the patient's condition remain clinical decisions.
 
@@ -228,7 +234,7 @@ The patient's species and weight are entered once in the header and used by ever
 | CPR drugs | Per-kg doses at an editable concentration; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
 | Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
 | CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
-| Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013 |
+| Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013; same formulas in AAHA's current maintenance rate table |
 | Transfusion | (target - patient PCV) / donor PCV x blood volume (90 dog, 60 cat mL/kg) x kg | Merck |
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
 | Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
@@ -248,7 +254,7 @@ The toxin calculators use dog thresholds; the web app warns when the patient is 
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
 - [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf): CPR drug doses, concentrations and defibrillation energies.
 - VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC.
-- AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/): maintenance formulas.
+- AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/) (2013 guidelines) and [Maintenance fluid rates](https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance formulas.
 - Merck Veterinary Manual, [Blood Transfusions in Dogs and Cats](https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats) and [weight to BSA conversion](https://www.merckvetmanual.com/multimedia/table/weight-to-body-surface-area-conversion-for-dogs).
 - Vets Now, [My dog has eaten chocolate](https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate): the same thresholds, theobromine figures for dark chocolate and cocoa powder, and the worked examples used in the tests.
 

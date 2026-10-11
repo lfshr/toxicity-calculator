@@ -53,7 +53,7 @@ public abstract partial class ToxinFormViewModel(INavigationService navigation) 
         ClearFields();
     }
 
-    protected static string Format(double value) => NumberInput.Format(value);
+    protected static string Format(double value) => NumberInput.FormatInput(value);
 
     protected static string FormatPrecise(double value) => NumberInput.FormatPrecise(value);
 

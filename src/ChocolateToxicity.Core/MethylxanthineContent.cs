@@ -41,6 +41,8 @@ public static class MethylxanthineContent
     // Anchor points (cocoa %, mg/g) for estimating content from a cocoa percentage.
     // The milk chocolate figure is placed at 20%, the lowest cocoa content UK and EU rules allow for (family) milk
     // chocolate, so every milk bar gets at least the Merck milk chocolate content; UK bars are often labelled 20-30%.
+    // Below 20% the curve stays flat at the milk figure: US milk chocolate needs only 10% chocolate liquor, and a bar
+    // with a stated cocoa % should never get less than Merck's milk chocolate. White chocolate goes by type.
     // 100% is unsweetened baking chocolate. The semisweet/sweet dark figure
     // is placed at 45%, the bottom of the 45-59% band Vets Now quotes for lower-grade dark chocolate, so every bar
     // in that band gets at least the Merck semisweet content. Content between anchors is linearly interpolated.
@@ -48,7 +50,7 @@ public static class MethylxanthineContent
     // for a good quality dark bar (4000 mg in 500 g), leaving room for caffeine.
     private static readonly (double CocoaPercent, double MgPerGram)[] CocoaCurve =
     [
-        (0.0, 0.0),
+        (0.0, Milk),
         (20.0, Milk),
         (45.0, MildDark),
         (100.0, Baking),

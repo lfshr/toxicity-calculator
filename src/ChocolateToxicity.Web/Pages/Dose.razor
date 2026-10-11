@@ -46,11 +46,11 @@
             <p class="big">@F(rounded) @(rounded == 1 ? "tablet" : "tablets")</p>
             <p class="hint">
                 Exactly @F(tablets) tablets. @F(rounded) gives @F(rounded * Parse(tabletText)!.Value) mg = @F(rounded * Parse(tabletText)!.Value / WeightKg!.Value) mg/kg.
-                @if (rounded == 0)
-                {
-                    <span> The dose is less than the smallest portion: consider a lower strength or a liquid.</span>
-                }
             </p>
+            @if (DrugDose.SplitWarning(tablets, rounded) is { } warning)
+            {
+                <p class="notice warning" id="split-warning">@warning</p>
+            }
         }
         <CopyButton Text="NotesText" />
     </section>

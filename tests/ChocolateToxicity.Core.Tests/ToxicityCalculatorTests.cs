@@ -95,11 +95,11 @@ public class ToxicityCalculatorTests
     }
 
     [Theory]
-    [InlineData(0, 0)]
+    [InlineData(0, 2.3)]
     [InlineData(20, 2.3)]
     [InlineData(45, 5.6)]
     [InlineData(100, 15.5)]
-    [InlineData(10, 1.15)]
+    [InlineData(10, 2.3)]
     [InlineData(26, 3.092)]
     [InlineData(30, 3.62)]
     [InlineData(40, 4.94)]
