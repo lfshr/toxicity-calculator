@@ -74,7 +74,9 @@ public partial class RatBaitViewModel(INavigationService navigation) : ToxinForm
         var activeMg = Rodenticides.ActiveMgEaten(bait.Value, concentration!.Value);
         var percent = concentration.Value.ToString("0.####", CultureInfo.CurrentCulture);
         return new ResultViewModel(
-            Rodenticides.Assess(SelectedIngredient.Info.Ingredient, activeMg, weight),
+            PatientIsCat
+                ? Rodenticides.AssessCat(SelectedIngredient.Info.Ingredient, activeMg, weight)
+                : Rodenticides.Assess(SelectedIngredient.Info.Ingredient, activeMg, weight),
             $"{Format(bait.Value)} g of bait containing {percent}% {name}, eaten by a {Format(weight)} kg {PatientNoun}.",
             $"{Format(bait.Value)} g x {percent}% = {FormatPrecise(activeMg)} mg {name}, divided by {Format(weight)} kg.");
     }

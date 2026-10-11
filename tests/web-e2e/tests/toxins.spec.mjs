@@ -144,6 +144,23 @@ test('cats get a warning on dog-only toxin thresholds', async ({ page }) => {
   await open(page, 'toxins/chocolate');
   await setPatient(page, '4', 'Cat');
   await expect(page.getByText('These thresholds are for dogs.')).toBeVisible();
+  await expect(page.getByText(/Feline data is lacking/)).toBeVisible();
+});
+
+test('rat bait in a cat uses cat thresholds where they are published', async ({ page }) => {
+  await open(page, 'toxins/rat-bait');
+  await setPatient(page, '4', 'Cat');
+  await page.locator('#ingredient').selectOption('Brodifacoum');
+  await expect(page.getByText(/no agreed published cat LD50 for brodifacoum/)).toBeVisible();
+  await page.locator('#ingredient').selectOption('Warfarin');
+  await expect(page.getByText('Cat thresholds used for warfarin.')).toBeVisible();
+  await page.locator('#bait').fill('10');
+  await page.getByRole('button', { name: 'Calculate' }).click();
+
+  // 10 g of 0.025% warfarin in a 4 kg cat is 0.625 mg/kg: toxic in a cat (from 0.5), not yet in a dog (from 2).
+  await expect(page.locator('#dose')).toHaveText('0.625 mg/kg');
+  await expect(page.getByText('Toxic dose', { exact: true })).toBeVisible();
+  await expect(page.getByText(/lowest cat LD50 5 mg\/kg/)).toBeVisible();
 });
 
 test('paracetamol in a cat uses cat guidance, not the dog thresholds', async ({ page }) => {

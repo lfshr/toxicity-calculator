@@ -224,6 +224,12 @@ the toxic dose if that is lower.
 Cholecalciferol (vitamin D3, usually 0.075%): signs from 0.1 mg/kg (emesis flagged), soft tissue mineralisation
 above 0.5 mg/kg.
 
+For cats, the same one-tenth rule uses the cat LD50, but only where two published sources agree on it: warfarin
+(lowest cat LD50 5 mg/kg, so toxic from 0.5 mg/kg) and diphacinone (15 mg/kg, toxic from 1.5 mg/kg). Merola 2002 and
+Moorman 2002 disagree on brodifacoum and bromadiolone (unknown vs 25 mg/kg), only Merola gives difethialone (and only as
+more than 16 mg/kg), and there is no published cat threshold for cholecalciferol, so those use the dog figures and the
+page says feline data is lacking. The 0.02 mg/kg decontamination threshold is kept for cats.
+
 ## Clinical calculators (web app)
 
 The patient's species and weight are entered at the top of each calculator and carried to the others.
@@ -241,7 +247,9 @@ The patient's species and weight are entered at the top of each calculator and c
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
 | Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
 
-The toxin calculators use dog thresholds; the web app warns when the patient is a cat.
+The chocolate and xylitol calculators use dog thresholds; no published source gives cat thresholds for chocolate, and
+Merck says cats are not at risk from xylitol. Ibuprofen, paracetamol, warfarin and diphacinone use cat thresholds for a
+cat. Wherever the dog figures are used for a cat, the web app says feline data is lacking.
 
 ## Sources
 
@@ -250,7 +258,9 @@ The toxin calculators use dog thresholds; the web app warns when the patient is 
 - Dunayer, [Ibuprofen toxicosis in dogs, cats, and ferrets](https://www.dvm360.com/view/toxciology-brief-ibuprofen-toxicosis-dogs-cats-and-ferrets), Veterinary Medicine 2004: ibuprofen thresholds from ASPCA Animal Poison Control Center data.
 - Merck Veterinary Manual, [Toxicoses From Human Analgesics in Animals](https://www.merckvetmanual.com/toxicology/toxicoses-from-human-analgesics/toxicoses-from-human-analgesics-in-animals): ibuprofen and paracetamol thresholds in dogs.
 - Merck Veterinary Manual, [Anticoagulant Rodenticide Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/anticoagulant-rodenticide-poisoning-in-animals): toxic dose as one-tenth of the lowest LD50, decontamination and vitamin K1.
-- Merola, [Anticoagulant rodenticides: Deadly for pests, dangerous for pets](https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), Veterinary Medicine 2002: dog LD50s, bait concentrations and the 0.02 mg/kg decontamination threshold.
+- Merola, [Anticoagulant rodenticides: Deadly for pests, dangerous for pets](https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), Veterinary Medicine 2002: dog and cat LD50s, bait concentrations and the 0.02 mg/kg decontamination threshold.
+- Moorman, [Anticoagulant rodenticides: now more toxic to pests and pets](https://www.aspcapro.org/sites/default/files/c-vettech_0102.pdf), Veterinary Technician 2002: cat LD50s, used where they agree with Merola.
+- VPIS for BASF, [Emergency treatment of cholecalciferol rodenticide poisoning](https://www.vpisglobal.com/wp-content/uploads/2021/04/Vitamin-D-toxicosis-for-vets-paper-FINAL.pdf), 2020: the experimental cat study quoted in the cat warning.
 - Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. No verifiable dog LD50 was found for difenacoum (the 50 mg/kg sometimes quoted couldn't be
   traced to a primary source), so it is assessed like an unknown anticoagulant.
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
@@ -263,5 +273,5 @@ The toxin calculators use dog thresholds; the web app warns when the patient is 
 ## Disclaimer
 
 This is a decision aid for qualified veterinary professionals, not a substitute for clinical judgement.
-Individual dogs vary in sensitivity, and product content varies by brand and batch. The calculators are for dogs
-only: cats have different thresholds.
+Individual dogs vary in sensitivity, and product content varies by brand and batch. Where no published cat figure
+exists, the dog thresholds are shown for cats as a minimum estimate.

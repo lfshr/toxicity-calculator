@@ -162,6 +162,26 @@ public class ToxinFormTests
         Assert.Equal("Decontaminate and monitor", shown.BandTitle);
     }
 
+    [Theory]
+    [InlineData(false, "Decontaminate and monitor")] // 0.625 mg/kg is below the dog toxic dose of 2 mg/kg.
+    [InlineData(true, "Toxic dose")] // ...but above the cat toxic dose of 0.5 mg/kg.
+    public async Task Rat_bait_uses_the_cat_thresholds_for_a_cat(bool cat, string band)
+    {
+        var form = new RatBaitViewModel(_navigation)
+        {
+            PatientIsCat = cat,
+            DogWeightKg = "4",
+            SelectedIngredient = RodenticideOption.For(RodenticideIngredient.Warfarin),
+            BaitEatenGrams = "10",
+        };
+
+        await form.CalculateCommand.ExecuteAsync(null);
+
+        var shown = Assert.IsType<ResultViewModel>(_navigation.Shown);
+        Assert.Equal("0.625 mg/kg", shown.Dose);
+        Assert.Equal(band, shown.BandTitle);
+    }
+
     [Fact]
     public void Chocolate_bands_map_to_risk_colours()
     {
