@@ -54,14 +54,18 @@ public static class EmergencyDrugs
         new("Atipamezole", "Reverses alpha-2 agonists (medetomidine, dexmedetomidine)", 0.1, "mg", 5),
     ];
 
-    /// <summary>The CPR drugs for dogs: lidocaine first for refractory VF or pulseless VT, then amiodarone.</summary>
+    /// <summary>
+    /// The CPR drugs for dogs: lidocaine first for refractory VF or pulseless VT, then amiodarone. RECOVER 2024 advises
+    /// against polysorbate-80 amiodarone in dogs, and the UK 50 mg/mL injection contains it, so the dog entry warns to
+    /// check the vial. Cats are not covered by that recommendation.
+    /// </summary>
     public static IReadOnlyList<EmergencyDrug> Dog { get; } =
     [
         Adrenaline,
         Vasopressin,
         Atropine,
         new("Lidocaine", "Refractory VF or pulseless VT: first choice in dogs", 2, "mg", 20),
-        new("Amiodarone", "Refractory VF or pulseless VT, if lidocaine is unavailable", 5, "mg", 50),
+        new("Amiodarone", "Refractory VF or pulseless VT, if lidocaine is unavailable. Avoid polysorbate-80 formulations in dogs (RECOVER 2024): the UK 50 mg/mL injection contains it, so check the vial", 5, "mg", 50),
         Esmolol,
         .. Reversals,
     ];
@@ -85,7 +89,8 @@ public static class EmergencyDrugs
     /// <summary>
     /// External defibrillation energy in joules: the first shock, and later shocks if the first fails. Biphasic is
     /// 2 J/kg then 4 J/kg (RECOVER 2024 doubles the energy once and advises against going further). Monophasic is
-    /// 4 J/kg then 6 J/kg, the bottom and top of the RECOVER 2024 range.
+    /// 4 J/kg then 6 J/kg: the RECOVER 2024 chart gives a 4-6 J/kg range, and using its top for later shocks is this
+    /// app's choice, not a RECOVER rule.
     /// </summary>
     public static (double FirstJoules, double LaterJoules) ExternalDefibrillation(double weightKg, bool biphasic)
     {

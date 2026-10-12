@@ -5,9 +5,9 @@ public sealed record EnergyFactor(Species Species, string Name, double Factor);
 
 /// <summary>Resting and maintenance energy requirements.</summary>
 /// <remarks>
-/// RER (kcal/day) = 70 x BW(kg)^0.75, the formula used in the WSAVA Global Nutrition Guidelines.
-/// The multiples are the commonly quoted WSAVA starting points; individual needs vary widely, so intake should
-/// be adjusted to body condition. Hospitalised patients are usually fed at RER.
+/// RER (kcal/day) = 70 x BW(kg)^0.75, as in the AAHA 2021 Nutrition and Weight Management
+/// Guidelines ("Energy Requirement Calculations", box 1). Every multiple here sits within AAHA's ranges; individual
+/// needs vary widely, so intake should be adjusted to body condition. Hospitalised patients are usually fed at RER.
 /// </remarks>
 public static class EnergyRequirement
 {
