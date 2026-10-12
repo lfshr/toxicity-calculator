@@ -105,6 +105,9 @@ test('fluid plan for a dehydrated dog', async ({ page }) => {
 
   // Maintenance 132 x 20^0.75 / 24 = 52 mL/hr, plus 1200 mL over 12 hours = 100 mL/hr.
   await expect(page.locator('#fluid-result .big')).toHaveText('152 mL/hr');
+  await expect(page.getByText('Usually 12-24 hours (AAHA 2024)')).toBeVisible();
+  await expect(page.getByText('this calculator follows AAHA')).toBeVisible();
+  await expect(page.getByText('0.6 L')).toHaveCount(0);
 });
 
 test('cats use the feline maintenance formula', async ({ page }) => {
@@ -121,6 +124,10 @@ test('transfusion volume', async ({ page }) => {
 
   await expect(page.locator('#transfusion-result .big')).toHaveText('450 mL');
   await expect(page.getByText('Often 25-30%')).toHaveCount(0);
+  await expect(page.locator('#transfusion-result')).toContainText('0.25 mL/kg over 15 minutes');
+  await expect(page.locator('#transfusion-result')).toContainText('more than 4 days ago (Merck Veterinary Manual)');
+  await expect(page.getByText('first 15-30 minutes')).toHaveCount(0);
+  await expect(page.locator('#transfusion-result')).toContainText('Slower transfusion rates are indicated in patients with cardiac disease or renal insufficiency');
 });
 
 test('BSA and RER', async ({ page }) => {
