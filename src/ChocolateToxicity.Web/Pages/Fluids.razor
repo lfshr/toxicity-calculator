@@ -14,7 +14,7 @@
         <NumberInput Id="dehydration" Value="@dehydrationText" ValueChanged="v => dehydrationText = v" Unit="%" Placeholder="e.g. 6" />
     </Field>
 
-    <Field Label="Replace the deficit over" For="hours" Hint="Usually 12-24 hours; longer for patients with heart disease.">
+    <Field Label="Replace the deficit over" For="hours" Hint="Usually 12-24 hours (AAHA 2024); go more cautiously with heart disease.">
         <NumberInput Id="hours" Value="@hoursText" ValueChanged="v => hoursText = v" Unit="hours" />
     </Field>
 
@@ -50,8 +50,8 @@
             }
         </table>
         <p class="hint">
-            Maintenance: @(Species == Species.Cat ? "80" : "132") x weight<sup>0.75</sup> mL/day (AAHA fluid therapy guidelines and maintenance rate table, @SpeciesName).
-            Deficit: % dehydration x weight (kg) x 1000 mL. Reassess the patient and adjust the rate regularly.
+            Maintenance: @(Species == Species.Cat ? "80" : "132") x weight<sup>0.75</sup> mL/day (2024 AAHA fluid therapy guidelines and maintenance rate table, @SpeciesName).
+            Deficit: % dehydration x weight (kg) x 1000 mL (2024 AAHA fluid therapy guidelines; Merck uses % x weight x 0.6 L over 4-12 hours, and this calculator follows AAHA). Reassess the patient and adjust the rate regularly.
         </p>
     </section>
 }

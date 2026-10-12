@@ -22,10 +22,11 @@ public sealed record FluidPlan(
 
 /// <summary>Maintenance fluids, dehydration deficit and drip rates.</summary>
 /// <remarks>
-/// AAHA 2013 Fluid Therapy Guidelines for Dogs and Cats, with the same formulas in AAHA's current maintenance fluid
-/// rate table (https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance is 132 x BW(kg)^0.75 mL/day for dogs and
-/// 80 x BW(kg)^0.75 mL/day for cats (https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/).
-/// The deficit is the standard estimate: % dehydration x body weight (kg) x 1000 mL.
+/// 2024 AAHA Fluid Therapy Guidelines for Dogs and Cats (Table 9 and Box 3), with the same formulas in AAHA's
+/// maintenance fluid rate table (https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/):
+/// maintenance is 132 x BW(kg)^0.75 mL/day for dogs and 80 x BW(kg)^0.75 mL/day for cats. The deficit is AAHA's
+/// "Fluid Deficit (L) = Body Weight (kg) x % Dehydration (as a decimal)", replaced over 12-24 hours. Merck (Nov 2025)
+/// uses % x kg x 0.6 over 4-12 hours instead; this follows AAHA.
 /// </remarks>
 public static class FluidTherapy
 {

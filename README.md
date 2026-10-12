@@ -251,7 +251,7 @@ The patient's species and weight are entered at the top of each calculator and c
 | CPR drugs | Per-kg doses at an editable concentration; vasopressin suggested first after a failed shock for VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic (6 J/kg for later shocks is the app's choice within that range), 2-4 J/kg biphasic; amiodarone in dogs warns against polysorbate-80 formulations | RECOVER 2024 |
 | Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
 | CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
-| Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013; same formulas in AAHA's current maintenance rate table |
+| Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | 2024 AAHA Fluid Therapy Guidelines (Table 9, Box 3) and AAHA's maintenance rate table; Merck's deficit (% x kg x 0.6 over 4-12 h) differs, the app follows AAHA |
 | Transfusion | (target - patient PCV) / donor PCV x blood volume (90 dog, 60 cat mL/kg) x kg | Merck |
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
 | Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | AAHA 2021 Nutrition and Weight Management Guidelines, box 1 |
@@ -276,7 +276,7 @@ page says Merck finds cats are not at risk.
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
 - [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf) and guidelines: CPR drug doses, concentrations, defibrillation energies, and (Wolf et al., Advanced Life Support) vasopressin suggested after an unsuccessful shock.
 - VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC. Both: emesis contraindications.
-- AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/) (2013 guidelines) and [Maintenance fluid rates](https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance formulas.
+- 2024 AAHA Fluid Therapy Guidelines for Dogs and Cats (Table 9 and Box 3), and AAHA [Maintenance fluid rates](https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance formulas, deficit and replacement time.
 - Merck Veterinary Manual, [Blood Transfusions in Dogs and Cats](https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats) and [weight to BSA conversion](https://www.merckvetmanual.com/multimedia/table/weight-to-body-surface-area-conversion-for-dogs).
 - Vets Now, [My dog has eaten chocolate](https://www.vets-now.com/pet-care-advice/dogs/dog-eaten-chocolate): the design reference for the calculator, and the worked examples used in the tests (not a source for the thresholds).
 
