@@ -58,6 +58,8 @@ test('CPR drugs for a 10 kg dog, with an editable concentration', async ({ page 
   await expect(page.getByText('50%')).toHaveCount(0);
   await page.getByRole('radio', { name: 'Monophasic' }).click();
   await expect(page.locator('#defib')).toHaveText('External: first shock 40 J, later shocks 60 J');
+  await expect(page.getByText('a choice within the range, not a RECOVER rule')).toBeVisible();
+  await expect(row('Amiodarone')).toContainText('Avoid polysorbate-80 formulations in dogs');
 });
 
 test('CPR drugs for a cat leave out lidocaine', async ({ page }) => {
@@ -66,6 +68,7 @@ test('CPR drugs for a cat leave out lidocaine', async ({ page }) => {
 
   await expect(page.locator('#cpr-table td strong', { hasText: 'Lidocaine' })).toHaveCount(0);
   await expect(page.locator('#cpr-table')).toContainText('preferred in cats');
+  await expect(page.locator('#cpr-table')).not.toContainText('polysorbate');
   await expect(page.locator('#lidocaine-cat')).toBeVisible();
 });
 
@@ -117,6 +120,7 @@ test('transfusion volume', async ({ page }) => {
   await page.locator('#target').fill('25');
 
   await expect(page.locator('#transfusion-result .big')).toHaveText('450 mL');
+  await expect(page.getByText('Often 25-30%')).toHaveCount(0);
 });
 
 test('BSA and RER', async ({ page }) => {

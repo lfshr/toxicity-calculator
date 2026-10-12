@@ -12,7 +12,7 @@
     <Field Label="Patient's PCV" For="recipient">
         <NumberInput Id="recipient" Value="@recipientText" ValueChanged="v => recipientText = v" Unit="%" Placeholder="e.g. 12" />
     </Field>
-    <Field Label="Target PCV" For="target" Hint="Often 25-30% in dogs and 20-25% in cats.">
+    <Field Label="Target PCV" For="target">
         <NumberInput Id="target" Value="@targetText" ValueChanged="v => targetText = v" Unit="%" Placeholder="e.g. 25" />
     </Field>
     <Field Label="Donor unit PCV" For="donor" Hint="Whole blood is usually about 40%; packed red cells 60-80%.">

@@ -248,13 +248,13 @@ The patient's species and weight are entered at the top of each calculator and c
 | Dexmedetomidine (cats) | 7-40 µg/kg IM or 3.5 µg/kg IV, of 0.5 mg/mL | Merck, chocolate toxicosis |
 | Ropinirole (Clevor) | Drops by weight band, 1.8-100 kg | Clevor UK SPC |
 | Activated charcoal | 1-2 g/kg PO once | Merck, chocolate toxicosis |
-| CPR drugs | Per-kg doses at an editable concentration; vasopressin suggested first after a failed shock for VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
+| CPR drugs | Per-kg doses at an editable concentration; vasopressin suggested first after a failed shock for VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic (6 J/kg for later shocks is the app's choice within that range), 2-4 J/kg biphasic; amiodarone in dogs warns against polysorbate-80 formulations | RECOVER 2024 |
 | Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
 | CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
 | Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013; same formulas in AAHA's current maintenance rate table |
 | Transfusion | (target - patient PCV) / donor PCV x blood volume (90 dog, 60 cat mL/kg) x kg | Merck |
 | BSA | K x (g)^(2/3) x 10^-4, K = 10.1 dog, 10.0 cat | Merck |
-| Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | WSAVA |
+| Energy | RER = 70 x kg^0.75 kcal/day, with life-stage multiples | AAHA 2021 Nutrition and Weight Management Guidelines, box 1 |
 
 Chocolate is dogs only: no published source gives cat thresholds, so Cat is greyed out there (the patient stays a cat
 in the other calculators). Ibuprofen, paracetamol, warfarin and diphacinone can be worked out for a cat, and the xylitol
