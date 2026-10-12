@@ -47,8 +47,11 @@ public sealed record RodenticideInfo(
 /// "Anticoagulant rodenticides: Deadly for pests, dangerous for pets", Veterinary Medicine 2002
 /// (https://www.aspcapro.org/sites/default/files/d-dbriefoct2002.pdf), and Moorman, "Anticoagulant rodenticides: now more
 /// toxic to pests and pets", Veterinary Technician, January 2002 (https://www.aspcapro.org/sites/default/files/c-vettech_0102.pdf);
-/// the lowest of the two is used: brodifacoum 0.2 (Merola; Moorman 0.25-3.6), bromadiolone 0.5 (Moorman 0.5-15; Merola
-/// 11-15), difethialone 4 (Merola), diphacinone 0.9 (Merola; Moorman 3) and warfarin 5 mg/kg (Moorman 5-50; Merola 20-300).
+/// generally the lowest of the two is used: brodifacoum 0.2 (Merola; Moorman 0.25-3.6), difethialone 4 (Merola),
+/// diphacinone 0.9 (Merola; Moorman 3) and warfarin 5 mg/kg (Moorman 5-50; Merola 20-300). Warfarin's 5 mg/kg probably
+/// reflects repeated dosing, but Moorman's warfarin decontamination threshold is the same 0.5 mg/kg as the toxic dose it
+/// gives, so the threshold has direct support. Bromadiolone uses Merola's 11 mg/kg: Moorman's 0.5 mg/kg is excluded as an
+/// outlier, because Grand 1976 (via Bates, Vet Times 2022) found dogs tolerated 10 mg/kg as a single dose.
 /// Both recommend decontaminating any dog or cat (Moorman) that eats 0.02 mg/kg or more. Flocoumafen LD50 from Animal
 /// Poisons Helpline (https://www.animalpoisons.com.au/alerts/flocoumafen/). Difenacoum has no dog LD50 in either paper; WHO
 /// IPCS Health and Safety Guide 95 gives 50-100 mg/kg for non-rodent mammals, which isn't dog-specific. So difenacoum, like
@@ -60,9 +63,10 @@ public sealed record RodenticideInfo(
 /// Cats: Merola 2002 (Table 1) gives cat LD50s of warfarin 5-30 mg/kg, diphacinone 15 mg/kg, difethialone &gt;16 mg/kg,
 /// and brodifacoum and bromadiolone unknown. Moorman 2002 gives warfarin 5-50 mg/kg, diphacinone 15 mg/kg, and
 /// brodifacoum and bromadiolone 25 mg/kg. Only warfarin and diphacinone agree, so only those can be assessed for a cat.
-/// Both papers are from the ASPCA Animal Poison Control Center in the same year and likely share an older LD50 table, so a
-/// cat LD50 above the dog's isn't taken as evidence that cats are less sensitive: cats are assessed with the lower of
-/// the dog and cat LD50s. The other anticoagulants, and cholecalciferol (no published cat threshold in Merck), are dogs only.
+/// The feline data is thin (single figures, both from the ASPCA Animal Poison Control Center in the same year), so as a
+/// precaution cats are assessed with the lower of the dog and cat LD50s, which for both is the dog figure. The cat
+/// figures may well be right; this is caution, not a correction. The other anticoagulants, and cholecalciferol (no
+/// published cat threshold in Merck), are dogs only.
 /// </remarks>
 public static class Rodenticides
 {
@@ -78,7 +82,7 @@ public static class Rodenticides
     public static IReadOnlyList<RodenticideInfo> All { get; } =
     [
         new(RodenticideIngredient.Brodifacoum, "brodifacoum", 0.005, 0.2),
-        new(RodenticideIngredient.Bromadiolone, "bromadiolone", 0.005, 0.5),
+        new(RodenticideIngredient.Bromadiolone, "bromadiolone", 0.005, 11),
         new(RodenticideIngredient.Difenacoum, "difenacoum", 0.005, FlocoumafenLd50MgPerKg, Ld50Verified: false),
         new(RodenticideIngredient.Difethialone, "difethialone", 0.0025, 4),
         new(RodenticideIngredient.Flocoumafen, "flocoumafen", 0.005, FlocoumafenLd50MgPerKg),
@@ -212,14 +216,22 @@ public static class Rodenticides
             $"Thresholds for {name}{(cat ? " in cats" : "")}: decontaminate from {FormatMg(decontaminateFrom)} mg/kg (Merola 2002; Moorman 2002), toxic from " +
             $"{FormatMg(toxicDose)} mg/kg (one-tenth of the LD50, Merck Veterinary Manual), " +
             (cat
-                ? $"using the lower of the dog and cat LD50s, {FormatMg(lowestLd50)} mg/kg (Merola 2002; Moorman 2002)."
+                ? $"using the lower of the dog and cat LD50s as a precaution, {FormatMg(lowestLd50)} mg/kg (Merola 2002; Moorman 2002)."
                 : ld50Verified
-                ? $"lowest reported dog LD50 {FormatMg(lowestLd50)} mg/kg (Merola 2002; Moorman 2002)."
+                ? $"dog LD50 {FormatMg(lowestLd50)} mg/kg ({Ld50Source(name)})."
                 : $"assessed as flocoumafen (dog LD50 {FormatMg(lowestLd50)} mg/kg) because no verified dog LD50 for {name} was found."),
             "Induce emesis within 4 hours of ingestion. At toxic doses, give vitamin K1 (Merck: 2.5 mg/kg PO every 12 hours or " +
             $"5 mg/kg every 24 hours, with food) for {(vitaminKWeeks == 2 ? "2 weeks, which Merck says is typically enough for warfarin" : "4 weeks (28 days)")}, " +
             "and check PT 48-72 hours after the last dose.");
     }
+
+    private static string Ld50Source(string name) => name switch
+    {
+        "warfarin" => "Moorman 2002, whose warfarin decontamination threshold is the same 0.5 mg/kg",
+        "bromadiolone" => "Merola 2002; Moorman's 0.5 mg/kg is excluded as an outlier",
+        "flocoumafen" => "Animal Poisons Helpline",
+        _ => "Merola 2002",
+    };
 
     private static string FormatMg(double value) => value.ToString("0.####", System.Globalization.CultureInfo.CurrentCulture);
 }

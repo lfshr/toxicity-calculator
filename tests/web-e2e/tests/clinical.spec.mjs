@@ -30,8 +30,8 @@ test('emetics for a 4 kg cat use dexmedetomidine', async ({ page }) => {
 test('CPR vasopressors follow RECOVER 2024', async ({ page }) => {
   await open(page, 'emergency');
   await setPatient(page, '10');
-  await expect(page.getByText(/Refractory VF or pulseless VT: preferred first-line vasopressor/)).toBeVisible();
-  await expect(page.getByText(/Shockable rhythms: only once refractory/)).toBeVisible();
+  await expect(page.getByText(/VF or pulseless VT after a failed shock: suggested first-line vasopressor/)).toBeVisible();
+  await expect(page.getByText(/Shockable rhythms: after a failed shock, if vasopressin is unavailable/)).toBeVisible();
 });
 
 test('Clevor has no dose under 1.8 kg', async ({ page }) => {

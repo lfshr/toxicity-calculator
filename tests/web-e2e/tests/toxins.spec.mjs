@@ -102,7 +102,7 @@ test('xylitol is treated from 50 mg/kg', async ({ page }) => {
 
   await expect(page.locator('#dose')).toHaveText('60 mg/kg');
   await expect(page.locator('.verdict-title')).toHaveText('Consider inducing emesis');
-  await expect(page.getByText(/treat from 50 mg\/kg \(VPIS; Tox Info Suisse\)/)).toBeVisible();
+  await expect(page.getByText(/treat from 50 mg\/kg \(Bates, Vet Times 2022; US references use 100 mg\/kg\)/)).toBeVisible();
 });
 
 test('ibuprofen and paracetamol keep separate forms', async ({ page }) => {
@@ -186,7 +186,7 @@ test('rat bait in a cat only offers ingredients with cat thresholds', async ({ p
   // 10 g of 0.025% warfarin in a 4 kg cat is 0.625 mg/kg: toxic from 0.5 (one-tenth of the 5 mg/kg LD50).
   await expect(page.locator('#dose')).toHaveText('0.625 mg/kg');
   await expect(page.getByText('Toxic dose', { exact: true })).toBeVisible();
-  await expect(page.getByText(/lower of the dog and cat LD50s, 5 mg\/kg/)).toBeVisible();
+  await expect(page.getByText(/lower of the dog and cat LD50s as a precaution, 5 mg\/kg/)).toBeVisible();
   await expect(page.getByText(/for 2 weeks, which Merck says is typically enough for warfarin/)).toBeVisible();
 });
 

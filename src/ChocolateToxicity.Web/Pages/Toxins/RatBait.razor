@@ -11,7 +11,7 @@
     <div class="notice warning" role="note">
         <strong>Cat selected.</strong>
         @(Vm.SelectedIngredient?.Info is { LowestCatLd50MgPerKg: { } catLd50, LowestDogLd50MgPerKg: { } dogLd50 } info
-            ? $" Thresholds for {info.Name} use the lower of the dog ({dogLd50} mg/kg) and cat ({catLd50} mg/kg) LD50s, because the published cat figures are too thin to show cats are less sensitive."
+            ? $" Thresholds for {info.Name} use the lower of the dog ({dogLd50} mg/kg) and cat ({catLd50} mg/kg) LD50s, as a precaution, because the published feline data is thin."
             : " Only warfarin and diphacinone have published cat thresholds, so the other ingredients are for dogs only.")
     </div>
 }

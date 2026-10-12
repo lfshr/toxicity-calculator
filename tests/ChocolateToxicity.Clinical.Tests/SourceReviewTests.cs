@@ -12,8 +12,9 @@ public class SourceReviewTests
         var vasopressin = drugs.Single(d => d.Name == "Vasopressin");
         var adrenaline = drugs.Single(d => d.Name.StartsWith("Adrenaline", StringComparison.Ordinal));
 
-        Assert.Contains("Refractory VF or pulseless VT: preferred first-line vasopressor", vasopressin.Use, StringComparison.Ordinal);
-        Assert.Contains("Shockable rhythms: only once refractory", adrenaline.Use, StringComparison.Ordinal);
+        Assert.Contains("VF or pulseless VT after a failed shock: suggested first-line vasopressor", vasopressin.Use, StringComparison.Ordinal);
+        Assert.Contains("Shockable rhythms: after a failed shock, if vasopressin is unavailable", adrenaline.Use, StringComparison.Ordinal);
+        Assert.DoesNotContain("refractory", adrenaline.Use, StringComparison.Ordinal);
         Assert.DoesNotContain("may replace or alternate", vasopressin.Use, StringComparison.Ordinal);
     }
 

@@ -169,8 +169,8 @@ percentage on a label counts it. It is not valid for cocoa powder, which is defa
 | 60 mg/kg | Seizures | Tremors and seizures; potentially lethal from 100 mg/kg (Merck oral LD50 100-200 mg/kg) |
 
 Emesis is flagged for consideration from 20 mg/kg. Time since ingestion and the patient's condition remain clinical
-decisions; emesis can be worthwhile up to about 6 hours after chocolate in a stable patient, because its fat delays
-gastric emptying (Animal Emergency Australia).
+decisions; a common rule of thumb is that emesis can be worthwhile up to about 6 hours after chocolate in a stable
+patient, because large amounts can form a mass in the stomach (Gwaltney-Brant 2001). No reference gives a fixed cut-off.
 
 ## Other toxins
 
@@ -184,7 +184,7 @@ Dose in mg/kg of xylitol, from the product eaten and the xylitol per 100 g on it
 | Dose | Expected |
 |---|---|
 | under 50 mg/kg | Below the treatment threshold |
-| 50 mg/kg | Treat (VPIS; Tox Info Suisse): emesis flagged, monitor glucose |
+| 50 mg/kg | Treat (Bates, Vet Times 2022; US references use 100 mg/kg): emesis flagged, monitor glucose |
 | 100 mg/kg | Hypoglycaemia (Merck) |
 | 500 mg/kg | Hepatic failure |
 
@@ -209,15 +209,17 @@ Dose in mg/kg, from the strength per tablet (or mg per mL for a liquid) and the 
 Dose in mg/kg of active ingredient, from the bait eaten and its concentration, which is filled in with the usual
 strength for the chosen ingredient.
 
-For anticoagulants the toxic dose is one-tenth of the lowest reported dog LD50 in Merola 2002 and Moorman 2002, as the
-Merck Veterinary Manual describes. Emesis is flagged from 0.02 mg/kg, the conservative decontamination threshold both
+For anticoagulants the toxic dose is one-tenth of the dog LD50, as the Merck Veterinary Manual describes, generally the
+lowest in Merola 2002 and Moorman 2002. Bromadiolone uses Merola's 11 mg/kg: Moorman's 0.5 mg/kg is excluded as an
+outlier, because dogs tolerated 10 mg/kg as a single dose in Grand 1976 (Bates, Vet Times 2022). Warfarin's 0.5 mg/kg
+matches Moorman's warfarin decontamination threshold. Emesis is flagged from 0.02 mg/kg, the conservative decontamination threshold both
 papers give, or from the toxic dose if that is lower. Vitamin K1 is advised for 2 weeks for warfarin and 4 weeks for the
 others (Merck).
 
 | Ingredient | Usual bait | Lowest dog LD50 (mg/kg) | Toxic from (mg/kg) |
 |---|---|---|---|
 | Brodifacoum | 0.005% | 0.2 | 0.02 |
-| Bromadiolone | 0.005% | 0.5 (Moorman) | 0.05 |
+| Bromadiolone | 0.005% | 11 | 1.1 |
 | Difenacoum | 0.005% | Not verified: assessed as flocoumafen, 0.075 | 0.0075 (treat as a potent second-generation bait) |
 | Difethialone | 0.0025% | 4 | 0.4 |
 | Flocoumafen | 0.005% | 0.075 | 0.0075 |
@@ -229,8 +231,8 @@ Cholecalciferol (vitamin D3, usually 0.075%): signs from 0.1 mg/kg (emesis flagg
 above 0.5 mg/kg.
 
 Cats can be assessed only for warfarin and diphacinone, the two where Merola 2002 and Moorman 2002 agree on a cat LD50
-(5 and 15 mg/kg). The two papers likely share an older LD50 table, so a cat LD50 above the dog's isn't taken to mean
-cats are less sensitive: cats use the lower of the dog and cat LD50s, which for both is the dog figure. The papers
+(5 and 15 mg/kg). The feline data is thin, so as a precaution cats use the lower of the dog and cat LD50s, which for both
+is the dog figure. The papers
 disagree on brodifacoum and bromadiolone (unknown vs 25 mg/kg), only Merola gives difethialone (and only as more than
 16 mg/kg), and there is no published cat threshold for cholecalciferol, so those are dogs only: with Cat selected they
 are greyed out in the ingredient list, and choosing one greys out Cat. Moorman applies the 0.02 mg/kg decontamination
@@ -246,7 +248,7 @@ The patient's species and weight are entered at the top of each calculator and c
 | Dexmedetomidine (cats) | 7-40 µg/kg IM or 3.5 µg/kg IV, of 0.5 mg/mL | Merck, chocolate toxicosis |
 | Ropinirole (Clevor) | Drops by weight band, 1.8-100 kg | Clevor UK SPC |
 | Activated charcoal | 1-2 g/kg PO once | Merck, chocolate toxicosis |
-| CPR drugs | Per-kg doses at an editable concentration; vasopressin first for refractory VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
+| CPR drugs | Per-kg doses at an editable concentration; vasopressin suggested first after a failed shock for VF or pulseless VT, adrenaline for non-shockable rhythms; defibrillation 4-6 J/kg monophasic, 2-4 J/kg biphasic | RECOVER 2024 |
 | Drug dose | mg = kg x mg/kg; mL = mg / (mg/mL); tablets rounded to the chosen split | |
 | CRI | Undiluted mL/hr = mg/hr / (mg/mL); in fluids, mg to add = mg/hr x volume / rate | |
 | Fluid therapy | Maintenance 132 x kg^0.75 (dog) or 80 x kg^0.75 (cat) mL/day; deficit = % x kg x 1000 mL | AAHA 2013; same formulas in AAHA's current maintenance rate table |
@@ -261,10 +263,9 @@ page says Merck finds cats are not at risk.
 ## Sources
 
 - Merck Veterinary Manual, [Chocolate Toxicosis in Animals](https://www.merckvetmanual.com/toxicology/food-hazards/chocolate-toxicosis-in-animals): methylxanthine content per type and the 20, 40-50 and 60 mg/kg thresholds.
-- Gwaltney-Brant, [Chocolate intoxication](https://www.aspcapro.org/sites/default/files/m-toxbrief_0201.pdf), Veterinary Medicine 2001: the primary source for the 20, 40-50 and 60 mg/kg thresholds.
-- Animal Emergency Australia, [Chocolate toxicity in dogs: clinical protocol](https://animalemergencyaustralia.com.au/chocolate-toxicity-in-dogs/): emesis worthwhile up to 6 hours in a stable patient.
+- Gwaltney-Brant, [Chocolate intoxication](https://www.aspcapro.org/sites/default/files/m-toxbrief_0201.pdf), Veterinary Medicine 2001: the primary source for the 20, 40-50 and 60 mg/kg thresholds, chocolate forming a gastric mass, and repeated charcoal in symptomatic animals.
 - Merck Veterinary Manual, [Xylitol Toxicosis in Dogs](https://www.merckvetmanual.com/toxicology/food-hazards/xylitol-toxicosis-in-dogs): 100 and 500 mg/kg thresholds.
-- Tox Info Suisse, [Xylitol toxic to dogs](https://www.toxinfo.ch/xylitol_toxic_to_dogs), and the UK VPIS (Bates, Vet Times 2022): treat from 50 mg/kg.
+- Bates, Vet Times 2022: xylitol treatment from 50 mg/kg, and Grand 1976 on bromadiolone. Tox Info Suisse, [Xylitol toxic to dogs](https://www.toxinfo.ch/xylitol_toxic_to_dogs) (for owners), gives the same 50 mg/kg.
 - Dunayer, [Ibuprofen toxicosis in dogs, cats, and ferrets](https://www.dvm360.com/view/toxciology-brief-ibuprofen-toxicosis-dogs-cats-and-ferrets), Veterinary Medicine 2004: ibuprofen thresholds from ASPCA Animal Poison Control Center data.
 - Merck Veterinary Manual, [Toxicoses From Human Analgesics in Animals](https://www.merckvetmanual.com/toxicology/toxicoses-from-human-analgesics/toxicoses-from-human-analgesics-in-animals): ibuprofen and paracetamol thresholds in dogs.
 - Merck Veterinary Manual, [Anticoagulant Rodenticide Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/anticoagulant-rodenticide-poisoning-in-animals): toxic dose as one-tenth of the lowest LD50, decontamination and vitamin K1.
@@ -273,7 +274,7 @@ page says Merck finds cats are not at risk.
 - Animal Poisons Helpline, [Flocoumafen](https://www.animalpoisons.com.au/alerts/flocoumafen/): flocoumafen dog LD50. Difenacoum has no dog LD50 in Merola or
   Moorman (WHO IPCS Health and Safety Guide 95 gives 50-100 mg/kg for non-rodent mammals, not dogs), so it is assessed like an unknown anticoagulant.
 - Merck Veterinary Manual, [Cholecalciferol (Vitamin D3) Poisoning in Animals](https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/cholecalciferol-vitamin-d3-poisoning-in-animals): 0.1 and 0.5 mg/kg thresholds and bait concentration.
-- [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf) and guidelines: CPR drug doses, concentrations, defibrillation energies, and vasopressin as the first-line vasopressor for refractory shockable rhythms.
+- [RECOVER 2024 drug dosing chart](https://recoverinitiative.org/wp-content/uploads/2026/01/RECOVER_2024_Drug_Dosing_Charts_KGS.pdf) and guidelines: CPR drug doses, concentrations, defibrillation energies, and (Wolf et al., Advanced Life Support) vasopressin suggested after an unsuccessful shock.
 - VMD, [Clevor SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_3016241.PDF): ropinirole drops by weight. [Emedog SPC](https://www.vmd.defra.gov.uk/productInformationdatabase/files/SPC_Documents/SPC_2419253.PDF): apomorphine 0.1 mg/kg SC. Both: emesis contraindications.
 - AAHA, [Fluids for maintenance and replacement](https://www.aaha.org/aaha-guidelines/fluid-therapy/fluids-for-maintenance-and-replacement/) (2013 guidelines) and [Maintenance fluid rates](https://aaha.org/aaha-guidelines/fluid-therapy/quick-reference-fluid-tables/maintenance-fluid-rates/): maintenance formulas.
 - Merck Veterinary Manual, [Blood Transfusions in Dogs and Cats](https://www.merckvetmanual.com/circulatory-system/blood-groups-and-blood-transfusions-in-dogs-and-cats/blood-transfusions-in-dogs-and-cats) and [weight to BSA conversion](https://www.merckvetmanual.com/multimedia/table/weight-to-body-surface-area-conversion-for-dogs).
